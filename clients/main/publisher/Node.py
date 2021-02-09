@@ -18,17 +18,20 @@ class Node:
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']
                 break
+        
+        print("host ip: " + self.host)
 
     def establishConnection(self, mqSkt):
         sktReq = mqSkt.getReq()
-        masked = self.host.rpartition('.')[0] + '.'
+        masked = self.host.rpartition('.')[0]
         port = self.publisherConfig.getPort('rep')
 
         # Connect to random Publisher
         for last in range(1, 256):
-            addr = "tcp://{0}.{1}:{0}".format(masked, last, port)
+            if "{0}.{1}".format(masked, last) == self.host:
+                continue
+            addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
             sktReq.connect(addr)
 
         # Ask randomly conneted Publisher to notify subscribers to connect
-        res = None
-        sktReq.send_string("hello")
+        sktReq.send_pyobj(["JOIN", self.host])
