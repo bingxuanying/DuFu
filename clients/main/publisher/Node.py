@@ -14,6 +14,9 @@ class Node:
         host_name = socket.gethostname()
         self.host = socket.gethostbyname(host_name)
 
+        # ** Debug: Localhost
+        print("local host: " + self.host)
+
         # Init publisherConfig
         self.publisherConfig = publisherConfig
 
