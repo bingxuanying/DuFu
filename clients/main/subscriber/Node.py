@@ -27,7 +27,5 @@ class Node:
 
         # Connect to random Publisher
         for last in range(1, 256):
-            if "{0}.{1}".format(masked, last) == self.host:
-                continue
             addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
             sktSub.connect(addr)

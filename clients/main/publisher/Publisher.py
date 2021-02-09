@@ -27,28 +27,32 @@ class Publisher:
             pass
         else:
             # Init socket REQ and REP
-            print("[SETUP] Setup REQ socket ...")
+            print("[SETUP] Setup REQ/REP/PUB sockets ...")
             self.mqSkt.setupReq()
+            self.mqSkt.setupRep()
+            self.mqSkt.setupPub()
 
             # Config Leader Publisher
             print("[SETUP] Establishing connection with existing Publisher ...")
             self.node.establishConnection(self.mqSkt)
 
     def run(self):
-        self.mqSkt.setupPub()
-        self.mqSkt.setupRep()
         sktRep, sktPub = self.mqSkt.getRep(), self.mqSkt.getPub()
+        poller = self.mqSkt.getPoller()
         while True:
             try:
-                messege = sktRep.recv_pyobj()
-                sktRep.send_pyobj(["ACK", ""])
+                socks = dict(poller.poll(100))
+                if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
+                    messege = sktRep.recv_pyobj()
+                    if type(messege) == list:
+                        key = messege[0]
+                        body = messege[1]
+                        if key == "JOIN":
+                            sktPub.send_pyobj([key, body])
+                            print("Notified SUBs join " + body)
+                    sktRep.send_pyobj(["ACK", ""])
 
-                if type(messege) == list:
-                    key = messege[0]
-                    body = messege[1]
-                    if key == "JOIN":
-                        sktPub.send_pyobj([key, body])
-                        print("Notified SUBs join " + body)
+                sktPub.send_pyobj(["test", self.node.host])
 
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide ...")

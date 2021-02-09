@@ -26,7 +26,7 @@ class Subscriber:
             pass
         else:
             # Init socket REQ and REP
-            print("[SETUP] Setup REQ socket ...")
+            print("[SETUP] Setup SUB socket ...")
             self.mqSkt.setupSub()
 
             # Config Leader Publisher
@@ -35,10 +35,12 @@ class Subscriber:
 
     def run(self):
         sktSub = self.mqSkt.getSub()
+        sktSub.subscribe('')
+
         while True:
             try:
                 message = sktSub.recv_pyobj()
                 print(message)
             except KeyboardInterrupt:
-                print("\ninterrupted")
+                print("interrupted")
                 break

@@ -16,7 +16,7 @@ class MQSocket:
     def setupRep(self):
         self.sktSet["rep"] = self.ctx.socket(zmq.REP)
         self.sktSet["rep"].bind(
-            "tcp://*:{0000}".format(self.publisherConfig.getPort("rep")))
+            "tcp://*:{0}".format(self.publisherConfig.getPort("rep")))
         self.poller.register(self.sktSet["rep"], zmq.POLLIN)
 
     def setupSub(self):
@@ -26,7 +26,7 @@ class MQSocket:
     def setupPub(self):
         self.sktSet["pub"] = self.ctx.socket(zmq.PUB)
         self.sktSet["pub"].bind(
-            "tcp://*:{0000}".format(self.publisherConfig.getPort("pub")))
+            "tcp://*:{0}".format(self.publisherConfig.getPort("pub")))
 
     def getReq(self):
         return self.sktSet["req"]
