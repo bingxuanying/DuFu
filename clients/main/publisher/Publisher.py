@@ -2,6 +2,7 @@ from Node import Node
 from MQSocket import MQSocket
 import zmq
 import random
+import time
 
 
 class Publisher:
@@ -32,8 +33,8 @@ class Publisher:
             self.mqSkt.setupReq()
 
             # Config Leader Publisher
-            print("[SETUP] Establishing connection with Publisher Leader ...")
-            self.lookUpTable = self.node.startLeaderConfig(self.mqSkt)
+            print("[SETUP] Establishing connection with existing Publisher ...")
+            self.lookUpTable = self.node.establishConnection(self.mqSkt)
 
     def run(self):
         self.mqSkt.setupPub()
@@ -48,16 +49,20 @@ class Publisher:
             #     print("Suicide successfully.")
             #     break
             try:
-                socks = dict(poller.poll(500))
-                if sktRep in socks and sktRep == zmq.POLLIN:
-                    message = sktRep.recv_pyobj()
-                    sktRep.send(b"Ack")
-                    # !! Check if res is TYPE set
-                    # if self.publisherConfig.isDebug:
-                    print(type(message))
-                    if type(message) == type(list):
-                        for idx, item in enumerate(message):
-                            print(type(item) + " " + idx + " " + item)
+                messege = sktRep.recv_string()
+                print(messege)
+                time.sleep(1)
+                sktRep.send_string("Ack")
+                # socks = dict(poller.poll(500))
+                # if sktRep in socks and sktRep == zmq.POLLIN:
+                #     message = sktRep.recv_pyobj()
+                #     sktRep.send(b"Ack")
+                #     # !! Check if res is TYPE set
+                #     # if self.publisherConfig.isDebug:
+                #     print(type(message))
+                #     if type(message) == type(list):
+                #         for idx, item in enumerate(message):
+                #             print(type(item) + " " + idx + " " + item)
 
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide")
