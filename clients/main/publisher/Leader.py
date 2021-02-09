@@ -27,11 +27,11 @@ class Leader:
                 res = sktReq.recv(zmq.NOBLOCK)
 
                 # !! Check if res is TYPE set
-                if self.publisherConfig.isDebug:
-                    print(type(res))
-                    if type(res) == type(list):
-                        for item in res:
-                            print(type(item))
+                # if self.publisherConfig.isDebug:
+                print(type(res))
+                if type(res) == type(list):
+                    for item in res:
+                        print(type(item))
 
                 # Successfully get Leader ip
                 if res:
@@ -39,8 +39,12 @@ class Leader:
                     self.leader = res
                     sktReq.disconnect(addr)
                     return True
-            except zmq.ZMQError:
-                continue
+            except zmq.ZMQError as e:
+                if e.errno == zmq.EAGAIN:
+                    pass  # no message was ready
+                else:
+                    raise  # real error
+                # continue
         return False
 
     def connectToLeader(self, localhost, mqSkt):

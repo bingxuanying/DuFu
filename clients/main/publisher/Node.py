@@ -1,5 +1,5 @@
-import socket
 from Leader import Leader
+import netifaces
 
 
 class Node:
@@ -11,11 +11,13 @@ class Node:
 
     def __init__(self, publisherConfig):
         # Get current host ip
-        host_name = socket.gethostname()
-        self.host = socket.gethostbyname(host_name)
+        host_list = netifaces.interfaces()
+        for name in host_list:
+            if len(name) > 4 and name[len(name)-4:] == "eth0":
+                self.host = netifaces.ifaddresses(name)[netifaces.AF_INET][0]['addr']
+                break
 
-        # ** Debug: Localhost
-        print("local host: " + self.host)
+        print(self.host)
 
         # Init publisherConfig
         self.publisherConfig = publisherConfig

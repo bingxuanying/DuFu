@@ -51,6 +51,7 @@ class Publisher:
                 socks = dict(poller.poll(500))
                 if sktRep in socks and sktRep == zmq.POLLIN:
                     message = sktRep.recv_pyobj()
+                    sktRep.send(b"Ack")
                     # !! Check if res is TYPE set
                     # if self.publisherConfig.isDebug:
                     print(type(message))
