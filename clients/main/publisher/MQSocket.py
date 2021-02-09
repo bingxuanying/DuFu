@@ -39,3 +39,6 @@ class MQSocket:
 
     def getPub(self):
         return self.sktSet["pub"]
+
+    def getPoller(self):
+        return self.poller

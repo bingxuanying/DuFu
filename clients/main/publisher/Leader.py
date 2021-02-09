@@ -4,32 +4,65 @@ import zmq
 class Leader:
     host = None
     lookUpTable = set()
+    publisherConfig = None
 
-    def __init__(self, host):
+    def __init__(self, host, publisherConfig):
         self.host = host
 
-    def findLeaderPublisher(self, mqSkt, publisherConfig) -> bool:
+        # Init publisherConfig
+        self.publisherConfig = publisherConfig
+
+    def findLeaderPublisher(self, mqSkt) -> bool:
         sktReq = mqSkt.getReq()
         masked = self.host.rpartition('.')[0] + '.'
-        port = publisherConfig.getPort('rep')
+        port = self.publisherConfig.getPort('rep')
 
-        for last in range(1, 255):
-            sktReq.connect(
-                "tcp://{0}.{1}:{0}".format(masked, last, port))
+        res = None
+        for last in range(1, 256):
+            # looking for a random Publisher and retrieve Leader ip
+            addr = "tcp://{0}.{1}:{0}".format(masked, last, port)
+            sktReq.connect(addr)
             try:
-                sktReq.send_string("NEW " + self.host)
+                sktReq.send(["LEADER"])
                 res = sktReq.recv(zmq.NOBLOCK)
+
                 # !! Check if res is TYPE set
-                # !! Check leader ip addr
+                if self.publisherConfig.isDebug:
+                    print(type(res))
+                    if type(res) == type(list):
+                        for item in res:
+                            print(type(item))
+
+                # Successfully get Leader ip
                 if res:
-                    self.lookUpTable = res
-                    self.leader = "{0}.{1}".format(masked, last)
+                    # !! message type
+                    self.leader = res
+                    sktReq.disconnect(addr)
                     return True
             except zmq.ZMQError:
                 continue
-
         return False
+
+    def connectToLeader(self, localhost, mqSkt):
+        sktReq = mqSkt.getReq()
+        port = self.publisherConfig.getPort('rep')
+
+        sktReq.connect("tcp://{0}:{0}".format(self.host, port))
+        sktReq.send_string("NEW" + localhost)
+        res = sktReq.recv()
+
+        # !! Check if res is TYPE set
+        if self.publisherConfig.isDebug:
+            print(type(res))
+            if type(res) == type(list):
+                for item in res:
+                    print(type(item))
+
+        self.lookUpTable = res
 
     def createLeaderPublisher(self, host):
         self.host = host
         self.lookUpTable.add(host)
+
+    def getLookUpTable(self):
+        return self.lookUpTable

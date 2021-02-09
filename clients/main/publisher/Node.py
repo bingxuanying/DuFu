@@ -7,23 +7,27 @@ class Node:
     host = None
     leader = None
     role = None
+    publisherConfig = None
 
-    def __init__(self):
+    def __init__(self, publisherConfig):
         # Get current host ip
         host_name = socket.gethostname()
         self.host = socket.gethostbyname(host_name)
 
-        # Config leader as self
-        self.leader = Leader(self.host)
+        # Init publisherConfig
+        self.publisherConfig = publisherConfig
 
-    def startLeaderConfig(self, mqSkt, publisherConfig):
-        print("[SETUP] Establishing connection with Publisher Leader ...")
-        if self.leader.findLeaderPublisher(mqSkt, publisherConfig):
-            ("(exist) Finish setup Leader.")
+        # Config leader as self
+        self.leader = Leader(self.host, self.publisherConfig)
+
+    def startLeaderConfig(self, mqSkt):
+        if self.leader.findLeaderPublisher(mqSkt):
+            print("(exist) Finish setup Leader")
+            # TODO: self.leader.connectToLeader(self.host, mqSkt)
             self.role = "follower"
         else:
-            ("(NOT exist) Create Leader.")
+            print("(NOT exist) Create Leader")
             self.leader.createLeaderPublisher(self.host)
             self.role = "leader"
 
-        return self.leader.lookUpTable
+        return self.leader.getLookUpTable()

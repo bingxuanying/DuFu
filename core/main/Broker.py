@@ -1,5 +1,4 @@
 import zmq
-from zmq.sugar import poll
 
 # Initialize context and sockets
 context = zmq.Context()

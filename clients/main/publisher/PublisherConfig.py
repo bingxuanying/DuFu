@@ -10,8 +10,10 @@ class PublisherConfig:
         # Init portConfig
         self.portConfig = ConfigParser()
         self.portConfig.read("../../../config/connect-soruce.config")
+
         # Config if the applicaiton needs broker
         self.hasBroker = hasBroker
+
         # Config if in Debug mode
         self.isDebug = isDebug
 
