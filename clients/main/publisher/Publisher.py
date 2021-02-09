@@ -28,9 +28,8 @@ class Publisher:
             pass
         else:
             # Init socket REQ and REP
-            print("[SETUP] Setup sockets ...")
+            print("[SETUP] Setup REQ socket ...")
             self.mqSkt.setupReq()
-            self.mqSkt.setupRep()
 
             # Config Leader Publisher
             print("[SETUP] Establishing connection with Publisher Leader ...")
@@ -38,6 +37,7 @@ class Publisher:
 
     def run(self):
         self.mqSkt.setupPub()
+        self.mqSkt.setupRep()
         sktRep, poller = self.mqSkt.getRep(), self.mqSkt.getPoller()
         while True:
             # try:
@@ -50,13 +50,13 @@ class Publisher:
             try:
                 socks = dict(poller.poll(500))
                 if sktRep in socks and sktRep == zmq.POLLIN:
-                    message = sktRep.recv_multipart()
+                    message = sktRep.recv_pyobj()
                     # !! Check if res is TYPE set
-                    if self.publisherConfig.isDebug:
-                        print(type(message))
-                        if type(message) == type(list):
-                            for idx, item in enumerate(message):
-                                print(type(item) + " " + idx + " " + item)
+                    # if self.publisherConfig.isDebug:
+                    print(type(message))
+                    if type(message) == type(list):
+                        for idx, item in enumerate(message):
+                            print(type(item) + " " + idx + " " + item)
 
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide")

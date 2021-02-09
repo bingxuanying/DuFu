@@ -23,7 +23,7 @@ class Leader:
             addr = "tcp://{0}.{1}:{0}".format(masked, last, port)
             sktReq.connect(addr)
             try:
-                sktReq.send(["LEADER"])
+                sktReq.send_pyobj(["LEADER"])
                 res = sktReq.recv(zmq.NOBLOCK)
 
                 # !! Check if res is TYPE set
