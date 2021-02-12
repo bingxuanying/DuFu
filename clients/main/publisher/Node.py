@@ -1,16 +1,13 @@
 import netifaces
-import zmq
+from common import *
 
 
 class Node:
     id = None
     host = None
-    publisherConfig = None
+    utils = ClientUtils()
 
-    def __init__(self, publisherConfig):
-        # Init publisherConfig
-        self.publisherConfig = publisherConfig
-
+    def __init__(self):
         # Get current host ip
         host_list = netifaces.interfaces()
         for name in host_list:
@@ -18,13 +15,14 @@ class Node:
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']
                 break
-        
-        print("host ip: " + self.host)
+
+        if self.host:
+            print("host ip: " + self.host)
 
     def establishConnection(self, mqSkt):
         sktReq = mqSkt.getReq()
         masked = self.host.rpartition('.')[0]
-        port = self.publisherConfig.getPort('rep')
+        port = self.utils.getPort('rep')
 
         # Connect to random Publisher
         for last in range(1, 256):

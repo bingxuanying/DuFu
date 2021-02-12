@@ -1,15 +1,12 @@
 import netifaces
+from common import *
 
-
-class Node:
+class SubNode:
     id = None
     host = None
-    subscriberConfig = None
+    utils = ClientUtils()
 
-    def __init__(self, subscriberConfig):
-        # Init subscriberConfig
-        self.subscriberConfig = subscriberConfig
-
+    def __init__(self):
         # Get current host ip
         host_list = netifaces.interfaces()
         for name in host_list:
@@ -18,12 +15,13 @@ class Node:
                     name)[netifaces.AF_INET][0]['addr']
                 break
 
-        print("host ip: " + self.host)
+        if self.host:
+            print("host ip: " + self.host)
 
     def subscribe(self, mqSkt):
         sktSub = mqSkt.getSub()
         masked = self.host.rpartition('.')[0]
-        port = self.subscriberConfig.getPort('pub')
+        port = self.utils.getPort('pub')
 
         # Connect to random Publisher
         for last in range(1, 256):

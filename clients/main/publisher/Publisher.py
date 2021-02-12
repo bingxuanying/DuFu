@@ -1,27 +1,20 @@
+from common import *
 from Node import Node
-from MQSocket import MQSocket
 import zmq
-import random
 
 
 class Publisher:
-    mqSkt = None
-    node = None
-    publisherConfig = None
+    mqSkt = MQSocket()
+    node = Node()
+    config = None
 
-    def __init__(self, publisherConfig):
+    def __init__(self, config):
         print("[SETUP] Publisher initializing ...")
-        # Init publisherConfig
-        self.publisherConfig = publisherConfig
-
-        # Init Socket with ZMQ
-        self.mqSkt = MQSocket(self.publisherConfig)
-
-        # Init Node
-        self.node = Node(self.publisherConfig)
+        # Init config
+        self.config = config
 
         # Establish connection to Broker or Leader Publisher
-        if self.publisherConfig.hasBroker:
+        if self.config.ifBroker:
             print("[SETUP] Establishing connection with Broker ...")
             # TODO: connect to Broker
             pass
