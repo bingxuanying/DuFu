@@ -1,11 +1,12 @@
 from common import *
-from SubNode import SubNode
+import zmq
 
 
 class Subscriber:
     mqSkt = MQSocket()
-    node = SubNode()
+    node = Node()
     config = None
+    utils = ClientUtils()
 
     def __init__(self, config):
         print("[SETUP] Publisher initializing ...")
@@ -24,24 +25,58 @@ class Subscriber:
 
             # Config Leader Publisher
             print("[SETUP] Establishing connection with existing Publisher ...")
-            self.node.subscribe(self.mqSkt)
+            self.connect()
 
     def run(self):
-        sktSub = self.mqSkt.getSub()
-        sktSub.subscribe('')
+        print("Local IP Addr: " + self.node.host)
 
-        # topicLst = []
-        # while True:
-        #     topic = input(
-        #         "Enter topics to subscribe (TYPE 'DONE' when finish): ")
-        #     if topic == "DONE":
-        #         break
-        #     topicLst.append(topic)
+        # Acquire sockets and poller
+        sktSub = self.mqSkt.getSub()
+        poller = self.mqSkt.getPoller()
+
+
+        # Allow user choose what to subscribe
+        while True:
+            topic = input("Enter zipcode you want to subscribe (enter DONE when finish): ")
+            # Leave if DONE
+            if topic == "DONE" or topic == "done":
+                break
+
+            # Make sure user enters valid zipcode
+            if len(topic) == 5 and topic.isnumeric():
+                sktSub.subscribe(topic)
+                print("Subscribe Success!")
+            else:
+                print("Please enter valid zipcode:)")
+        
+        print("Start Listening ...")
 
         while True:
             try:
-                message = sktSub.recv_pyobj()
-                print(message)
+                socks = dict(poller.poll(100))
+                if sktSub in socks and socks.get(sktSub) == zmq.POLLIN:
+                    message = sktSub.recv_string()
+                    t, m = self.utils.demogrify(message)
+
+                    if self.config.isDebug:
+                        print("topic: " + t)
+                        for k in m:
+                            print(str(k) + ": " + str(m[k]))
+                        print("")
             except KeyboardInterrupt:
-                print("interrupted")
+                print("[EXIT] Attemptting to suicide ...")
+                self.exit()
                 break
+
+    def exit(self):
+        print("[EXIT] Suicide success.")
+
+    def connect(self):
+        sktSub = self.mqSkt.getSub()
+        masked = self.node.host.rpartition('.')[0]
+        port = self.utils.getPort('pub')
+
+        # Flood through internet
+        for last in range(1, 256):
+            addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
+            sktSub.connect(addr)

@@ -13,7 +13,7 @@ def main():
     ifBroker = True if ifBroker == 'y' else False
 
     # Create Client Configration
-    config = ClientConfig(ifBroker)
+    config = ClientConfig(ifBroker, True)
 
     # Check if setup a Publisher or Subscriber
     instance = input("Create a Publisher or Subscriber (pub/sub)? ")

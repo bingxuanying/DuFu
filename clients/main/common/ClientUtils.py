@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+import json
 
 
 class ClientUtils:
@@ -11,3 +12,15 @@ class ClientUtils:
 
     def getPort(self, name: str) -> str:
         return self.portConfig["port"][name]
+
+    # Encode to Json
+    def mogrify(self, topic, msg):
+        # prepend topic and encode Json
+        return str(topic) + ' ' + json.dumps(msg)
+
+    # Convert Json to readable msg
+    def demogrify(self, topicmsg):
+        json0 = topicmsg.find('{')
+        topic = topicmsg[0:json0].strip()
+        msg = json.loads(topicmsg[json0:])
+        return topic, msg

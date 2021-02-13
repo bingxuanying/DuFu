@@ -1,12 +1,13 @@
 from common import *
-from Node import Node
 import zmq
+from random import randrange
 
 
 class Publisher:
     mqSkt = MQSocket()
     node = Node()
     config = None
+    utils = ClientUtils()
 
     def __init__(self, config):
         print("[SETUP] Publisher initializing ...")
@@ -26,26 +27,36 @@ class Publisher:
             self.mqSkt.setupPub()
 
             # Config Leader Publisher
-            print("[SETUP] Establishing connection with existing Publisher ...")
-            self.node.establishConnection(self.mqSkt)
+            # print("[SETUP] Establishing connection with existing Publisher ...")
+            # self.node.establishConnection(self.mqSkt)
 
     def run(self):
+        print("Local IP Addr: " + self.node.host)
+
         sktRep, sktPub = self.mqSkt.getRep(), self.mqSkt.getPub()
         poller = self.mqSkt.getPoller()
+
         while True:
             try:
-                socks = dict(poller.poll(100))
+                # Recv
+                socks = dict(poller.poll(1))
                 if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
-                    messege = sktRep.recv_pyobj()
-                    if type(messege) == list:
-                        key = messege[0]
-                        body = messege[1]
-                        if key == "JOIN":
-                            sktPub.send_pyobj([key, body])
-                            print("Notified SUBs join " + body)
-                    sktRep.send_pyobj(["ACK", ""])
+                    inMsg = sktRep.recv_string()
+                    # sktPub.send_string(self.mogrify(key, body))
+                    # print("Notified SUBs join " + body)
+                    sktRep.send_string(self.utils.mogrify("ACK", ""))
 
-                sktPub.send_pyobj(["test", self.node.host])
+                # Send
+                zipcode = randrange(10000, 100000)
+                body = {
+                    "temperature": randrange(-80, 135),
+                    "relhumidity": randrange(10, 60)
+                }
+
+                outMsg = self.utils.mogrify(zipcode, body)
+                # if self.config.isDebug:
+                #     print(outMsg)
+                sktPub.send_string(outMsg)
 
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide ...")
@@ -54,5 +65,26 @@ class Publisher:
 
     def exit(self):
         sktPub = self.mqSkt.getPub()
-        sktPub.send_pyobj(["LEAVE", self.node.host])
+        msg = {
+            "host": self.node.host
+        }
+        sktPub.send_string(self.utils.mogrify("LEAVE", msg))
         print("[EXIT] Suicide success.")
+
+    # """
+    # Connect to broker
+    # """
+    # def connect(self):
+    #     sktReq = self.mqSkt.getReq()
+    #     masked = self.node.host.rpartition('.')[0]
+    #     port = self.utils.getPort('rep')
+
+    #     # Connect to random Publisher
+    #     for last in range(1, 256):
+    #         if "{0}.{1}".format(masked, last) == self.node.host:
+    #             continue
+    #         addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
+    #         sktReq.connect(addr)
+
+    #     # Ask randomly conneted Publisher to notify subscribers to connect
+    #     sktReq.send_pyobj(["JOIN", self.node.host])
