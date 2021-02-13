@@ -58,11 +58,14 @@ class Subscriber:
                     message = sktSub.recv_string()
                     t, m = self.utils.demogrify(message)
 
+                # Debug Mode
                     if self.config.isDebug:
                         print("topic: " + t)
                         for k in m:
                             print(str(k) + ": " + str(m[k]))
                         print("")
+    
+            # User Exit
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide ...")
                 self.exit()

@@ -38,7 +38,7 @@ class Publisher:
 
         while True:
             try:
-                # Recv
+                # Recv Part
                 socks = dict(poller.poll(1))
                 if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
                     inMsg = sktRep.recv_string()
@@ -46,7 +46,7 @@ class Publisher:
                     # print("Notified SUBs join " + body)
                     sktRep.send_string(self.utils.mogrify("ACK", ""))
 
-                # Send
+                # Send Part
                 zipcode = randrange(10000, 100000)
                 body = {
                     "temperature": randrange(-80, 135),
@@ -54,10 +54,13 @@ class Publisher:
                 }
 
                 outMsg = self.utils.mogrify(zipcode, body)
-                # if self.config.isDebug:
-                #     print(outMsg)
                 sktPub.send_string(outMsg)
 
+                # Debug Mode
+                if self.config.isDebug:
+                    print(outMsg)
+
+            # User Exit
             except KeyboardInterrupt:
                 print("[EXIT] Attemptting to suicide ...")
                 self.exit()

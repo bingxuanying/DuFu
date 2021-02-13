@@ -6,14 +6,20 @@ from subscriber import *
 
 #** Setup Env on user demands
 def main():
+    # Check if enter debug mod
+    isDebug = input("Enter Debug mode (y/n)? ")
+    while isDebug != 'y' and isDebug != 'n':
+        isDebug = input("Please answer y or n: ")
+    isDebug = True if isDebug == 'y' else False
+
     # Check if broker is need
     ifBroker = input("Build broker (y/n)? ")
     while ifBroker != 'y' and ifBroker != 'n':
         ifBroker = input("Please answer y or n: ")
     ifBroker = True if ifBroker == 'y' else False
 
-    # Create Client Configration
-    config = ClientConfig(ifBroker, True)
+    # Setup basic Configration
+    config = ClientConfig(ifBroker, isDebug)
 
     # Check if setup a Publisher or Subscriber
     instance = input("Create a Publisher or Subscriber (pub/sub)? ")
