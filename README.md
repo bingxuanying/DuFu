@@ -3,7 +3,7 @@
 
 # Important:
 
-* The script can only run on Linux System with Pythop3 and Mininet installed
+* The script can only run on Linux System with Python3 and Mininet installed
 
 
 # Instructions:
@@ -14,4 +14,4 @@
 
 3. On each xTerms Window, run "python3 ./run_test.py" in folder "PubSub-ZMQ"
 
-4. Follow the instruction on command line to configure the system and create instance
+4. Follow instructions on command line to configure the system and create instance
