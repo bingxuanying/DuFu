@@ -72,7 +72,7 @@ class Publisher:
             "host": self.node.host
         }
         sktPub.send_string(self.utils.mogrify("LEAVE", msg))
-        print("[EXIT] Suicide success.")
+        print("[EXIT] Publisher suicide success.")
 
     # """
     # Connect to broker

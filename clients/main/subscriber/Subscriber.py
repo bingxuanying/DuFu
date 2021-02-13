@@ -72,7 +72,7 @@ class Subscriber:
                 break
 
     def exit(self):
-        print("[EXIT] Suicide success.")
+        print("[EXIT] Subscriber suicide success.")
 
     def connect(self):
         sktSub = self.mqSkt.getSub()

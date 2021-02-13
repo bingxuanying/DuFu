@@ -11,7 +11,7 @@ class ClientUtils:
         self.portConfig.read("../../config/connect-soruce.config")
 
     def getPort(self, name: str) -> str:
-        return self.portConfig["port"][name]
+        return self.portConfig["PORTS"][name]
 
     # Encode to Json
     def mogrify(self, topic, msg):
