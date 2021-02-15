@@ -53,7 +53,7 @@ class Publisher:
                 body = {
                     "temperature": randrange(-80, 135),
                     "relhumidity": randrange(10, 60),
-                    "timestamp": datetime.now().time()
+                    "timestamp": datetime.now().strftime(self.config.timeFormat)
                 }
 
                 outMsg = self.utils.mogrify(zipcode, body)

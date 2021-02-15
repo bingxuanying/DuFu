@@ -67,10 +67,15 @@ class Subscriber:
                         print("topic: " + t)
                         for k in m:
                             print(str(k) + ": " + str(m[k]))
-                        print("")
 
-                delta = datetime.now().time() - m["timestamp"]
-                print(delta)
+                    startTime = datetime.strptime(m["timestamp"], self.config.timeFormat)
+                    endTime = datetime.now()
+                    timeDiff = (endTime - startTime)
+                    execTime = timeDiff.total_seconds()
+                    if self.config.isDebug:
+                        print(endTime, " - ", startTime, " = ", execTime)
+                    
+                    print("")
     
             # User Exit
             except KeyboardInterrupt:

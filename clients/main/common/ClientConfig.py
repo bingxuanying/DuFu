@@ -1,6 +1,7 @@
 class ClientConfig:
     ifBroker = None
     isDebug = False
+    timeFormat = "%Y/%d/%m/%H/%M/%S/%f"
 
     def __init__(self, ifBroker, isDebug=False):
 
