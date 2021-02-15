@@ -1,3 +1,4 @@
+from datetime import datetime
 from common import *
 import zmq
 
@@ -67,6 +68,9 @@ class Subscriber:
                         for k in m:
                             print(str(k) + ": " + str(m[k]))
                         print("")
+
+                delta = datetime.now().time() - m["timestamp"]
+                print(delta)
     
             # User Exit
             except KeyboardInterrupt:

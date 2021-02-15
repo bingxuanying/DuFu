@@ -39,9 +39,11 @@ def main():
                 run_client(ifBroker)
         # If broker is not wanted / in "abandon" mode
         elif config["BROKER"]["host"] == "abandon":
+            print("=== In NON-BROKER Mode === ")
             run_client(False)
         # If broker exists, create pub/sub instance
         else:
+            print("=== In Broker Mode === ")
             run_client(True)
 
     # On exit

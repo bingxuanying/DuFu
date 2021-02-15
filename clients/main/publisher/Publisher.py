@@ -1,6 +1,8 @@
+from os import times
 from common import *
 import zmq
 from random import randrange
+from datetime import datetime
 
 
 class Publisher:
@@ -50,7 +52,8 @@ class Publisher:
                 zipcode = randrange(10000, 100000)
                 body = {
                     "temperature": randrange(-80, 135),
-                    "relhumidity": randrange(10, 60)
+                    "relhumidity": randrange(10, 60),
+                    "timestamp": datetime.now().time()
                 }
 
                 outMsg = self.utils.mogrify(zipcode, body)
