@@ -14,37 +14,37 @@ class Publisher:
         # Init config
         self.config = config
 
+        # Setup Socket as PUB
+        print("[SETUP] Setup PUB sockets ...")
+        self.mqSkt.setupPub()
+
         # Establish connection to Broker or Leader Publisher
         if self.config.ifBroker:
             print("[SETUP] Establishing connection with Broker ...")
             # TODO: connect to Broker
             pass
         else:
-            # Init socket REQ and REP
-            print("[SETUP] Setup REQ/REP/PUB sockets ...")
-            self.mqSkt.setupReq()
-            self.mqSkt.setupRep()
-            self.mqSkt.setupPub()
+            self.mqSkt.getPub().bind(
+                "tcp://*:{0}".format(self.utils.getPort("pub")))
 
-            # Config Leader Publisher
-            # print("[SETUP] Establishing connection with existing Publisher ...")
-            # self.node.establishConnection(self.mqSkt)
+        # Increase client size by 1
+        self.utils.increaseClientSize()
 
     def run(self):
         print("Local IP Addr: " + self.node.host)
 
-        sktRep, sktPub = self.mqSkt.getRep(), self.mqSkt.getPub()
-        poller = self.mqSkt.getPoller()
+        sktPub = self.mqSkt.getPub()
+        # poller = self.mqSkt.getPoller()
 
         while True:
             try:
-                # Recv Part
-                socks = dict(poller.poll(1))
-                if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
-                    inMsg = sktRep.recv_string()
-                    # sktPub.send_string(self.mogrify(key, body))
-                    # print("Notified SUBs join " + body)
-                    sktRep.send_string(self.utils.mogrify("ACK", ""))
+                # # Recv Part
+                # socks = dict(poller.poll(1))
+                # if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
+                #     inMsg = sktRep.recv_string()
+                #     # sktPub.send_string(self.mogrify(key, body))
+                #     # print("Notified SUBs join " + body)
+                #     sktRep.send_string(self.utils.mogrify("ACK", ""))
 
                 # Send Part
                 zipcode = randrange(10000, 100000)
@@ -72,6 +72,11 @@ class Publisher:
             "host": self.node.host
         }
         sktPub.send_string(self.utils.mogrify("LEAVE", msg))
+
+        # Decrease client size by 1
+        self.utils.decreaseClientSize()
+        # Check if config file needs to be reset
+        self.utils.tryReset()
         print("[EXIT] Publisher suicide success.")
 
     # """

@@ -9,3 +9,6 @@ class ClientConfig:
 
         # Config if in Debug mode
         self.isDebug = isDebug
+
+        # Config role to be PUB/SUB/BROKER
+        self.role = None

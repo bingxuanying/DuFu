@@ -5,21 +5,14 @@ from subscriber import *
 
 
 #** Setup Env on user demands
-def main(ifBroker=None):
+def main(ifBroker=False):
     # Ask if enter debug mod
     isDebug = input("Enter Debug mode (y/n)? ")
     while isDebug != 'y' and isDebug != 'n':
         isDebug = input("Please answer y or n: ")
     isDebug = True if isDebug == 'y' else False
 
-    # If the script is run directly
-    if not ifBroker:
-        # Ask if broker is need
-        ifBroker = input("Build broker (y/n)? ")
-        while ifBroker != 'y' and ifBroker != 'n':
-            ifBroker = input("Please answer y or n: ")
-    ifBroker = True if ifBroker == 'y' else False
-
+    # If the script is run directly, then assume no broker
     # Setup basic Configration
     config = ClientConfig(ifBroker, isDebug)
 

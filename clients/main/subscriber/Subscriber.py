@@ -27,6 +27,9 @@ class Subscriber:
             print("[SETUP] Establishing connection with existing Publisher ...")
             self.connect()
 
+        # Increase client size by 1
+        self.utils.increaseClientSize()
+
     def run(self):
         print("Local IP Addr: " + self.node.host)
 
@@ -72,6 +75,10 @@ class Subscriber:
                 break
 
     def exit(self):
+        # Decrease client size by 1
+        self.utils.decreaseClientSize()
+        # Check if config file needs to be reset
+        self.utils.tryReset()
         print("[EXIT] Subscriber suicide success.")
 
     def connect(self):
