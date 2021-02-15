@@ -20,22 +20,14 @@ class Publisher:
         print("[SETUP] Setup PUB sockets ...")
         self.mqSkt.setupPub()
 
-        # Establish connection to Broker or Leader Publisher
-        if self.config.ifBroker:
-            print("[SETUP] Establishing connection with Broker ...")
-            # TODO: connect to Broker
-            pass
-        else:
-            self.mqSkt.getPub().bind(
-                "tcp://*:{0}".format(self.utils.getPort("pub")))
+        # Establish connections
+        self.connect()
 
         # Increase client size by 1
         self.utils.increaseClientSize()
 
     def run(self):
         print("Local IP Addr: " + self.node.host)
-
-        sktPub = self.mqSkt.getPub()
         # poller = self.mqSkt.getPoller()
 
         while True:
@@ -56,8 +48,7 @@ class Publisher:
                     "timestamp": datetime.now().strftime(self.config.timeFormat)
                 }
 
-                outMsg = self.utils.mogrify(zipcode, body)
-                sktPub.send_string(outMsg)
+                self.publish(zipcode, body)
 
                 # Debug Mode
                 if self.config.isDebug:
@@ -82,20 +73,30 @@ class Publisher:
         self.utils.tryReset()
         print("[EXIT] Publisher suicide success.")
 
-    # """
-    # Connect to broker
-    # """
-    # def connect(self):
-    #     sktReq = self.mqSkt.getReq()
-    #     masked = self.node.host.rpartition('.')[0]
-    #     port = self.utils.getPort('rep')
+    """
+    **Connect to broker
+    """
+    def connect(self):
+        sktPub = self.mqSkt.getPub()
 
-    #     # Connect to random Publisher
-    #     for last in range(1, 256):
-    #         if "{0}.{1}".format(masked, last) == self.node.host:
-    #             continue
-    #         addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
-    #         sktReq.connect(addr)
-
-    #     # Ask randomly conneted Publisher to notify subscribers to connect
-    #     sktReq.send_pyobj(["JOIN", self.node.host])
+        # Connect to Broker
+        if self.config.ifBroker:
+            print("[SETUP] Establishing connection with Broker ...")
+            brokerHost = self.utils.getBrokerHost()
+            port = self.utils.getPort('broker_xsub')
+            addr = "tcp://{0}:{1}".format(brokerHost, port)
+            sktPub.connect(addr)
+        # Bind to all hosts
+        else:
+            print("[SETUP] Binding to all hosts ...")
+            sktPub.bind(
+                "tcp://*:{0}".format(self.utils.getPort("pub")))
+    
+    """
+    **Publish messages
+    @param topic + message in Json format
+    """
+    def publish(self, topic, body):
+        sktPub = self.mqSkt.getPub()
+        outMsg = self.utils.mogrify(topic, body)
+        sktPub.send_string(outMsg)

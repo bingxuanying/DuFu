@@ -1,5 +1,9 @@
+from Broker import Broker
+
+
 def main():
-    pass
+    broker = Broker()
+    broker.run()
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+import sys
 import netifaces
 
 
@@ -15,4 +16,4 @@ class Node:
                 break
         
         if not self.host:
-            print("Setting up host WRONG")
+            print("Setting up client host ERROR", file=sys.stderr)

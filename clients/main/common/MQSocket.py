@@ -41,3 +41,6 @@ class MQSocket:
 
     def getPoller(self):
         return self.poller
+    
+    def close(self):
+        self.ctx.destroy();

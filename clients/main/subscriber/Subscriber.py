@@ -55,6 +55,7 @@ class Subscriber:
         
         print("Start Listening ...")
 
+        # Main loop for receiving messages
         while True:
             try:
                 socks = dict(poller.poll(100))
@@ -62,7 +63,6 @@ class Subscriber:
                     message = sktSub.recv_string()
                     t, m = self.utils.demogrify(message)
 
-                # Debug Mode
                     if self.config.isDebug:
                         print("topic: " + t)
                         for k in m:
@@ -92,10 +92,37 @@ class Subscriber:
 
     def connect(self):
         sktSub = self.mqSkt.getSub()
-        masked = self.node.host.rpartition('.')[0]
-        port = self.utils.getPort('pub')
 
-        # Flood through internet
-        for last in range(1, 256):
-            addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
+        # Connect to Broker
+        if self.config.ifBroker:
+            print("[SETUP] Establishing connection with Broker ...")
+            brokerHost = self.utils.getBrokerHost()
+            port = self.utils.getPort('broker_xpub')
+            addr = "tcp://{0}:{1}".format(brokerHost, port)
             sktSub.connect(addr)
+        # Flood through internet
+        else:
+            print("[SETUP] Flooding through internet to connect ...")
+            masked = self.node.host.rpartition('.')[0]
+            port = self.utils.getPort('pub')
+
+            # Flood through internet
+            for last in range(1, 256):
+                addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
+                sktSub.connect(addr)
+    
+    def notify(self, topic, message):
+        if self.config.isDebug:
+            print("topic: " + topic)
+            for k in message:
+                print(str(k) + ": " + str(message[k]))
+
+        startTime = datetime.strptime(message["timestamp"], self.config.timeFormat)
+        endTime = datetime.now()
+        timeDiff = (endTime - startTime)
+        execTime = timeDiff.total_seconds()
+
+        if self.config.isDebug:
+            print(endTime, " - ", startTime, " = ", execTime)
+                    
+        print("")

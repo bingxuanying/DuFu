@@ -5,11 +5,9 @@ sys.path.append(d + "/clients/main/")
 sys.path.append(d + "/core/main")
 sys.path.append(d + "/utils")
 
-from configparser import ConfigParser
-
 from run_client import main as run_client
 from run_broker import main as run_broker
-from Utils import getConfig
+import SysConfigUtils
 
 # Ask if broker is needed
 def setupBroker():
@@ -22,7 +20,7 @@ def setupBroker():
 def main():
     try:
         ifBroker = True
-        config = getConfig()
+        config = SysConfigUtils.getConfig()
 
         # If broker NOT exists, check if broker is needed
         if config["BROKER"]["host"] == "none":
@@ -49,7 +47,7 @@ def main():
     # On exit
     except KeyboardInterrupt:
         print("Exit Success")
-        pass
+        
 
 if __name__ == "__main__":
     main()
