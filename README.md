@@ -8,7 +8,7 @@
 
 # Instructions:
 
-1. run "sudo -H python3 -m pip install --upgrade pyzmq netifaces"
+1. run "sudo -H python3 -m pip install --upgrade pyzmq netifaces matplotlib"
 
 2. run "sudo mn -x --topo=tree,fanout=3,depth=2"
 

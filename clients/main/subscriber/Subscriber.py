@@ -1,5 +1,6 @@
 from datetime import datetime
 from common import *
+from DataPlot import DataPlot
 import zmq
 
 
@@ -9,6 +10,7 @@ class Subscriber:
     config = None
     utils = ClientUtils()
     subscription = set()
+    dataPlot = None
 
     def __init__(self, config):
         print("[SETUP] Publisher initializing ...")
@@ -18,6 +20,9 @@ class Subscriber:
         # Init socket REQ and REP
         print("[SETUP] Setup SUB socket ...")
         self.mqSkt.setupSub()
+
+        # Init data plot instance
+        self.dataPlot = DataPlot(self.node.host)
 
         # Establish connections
         self.connect()
@@ -60,6 +65,7 @@ class Subscriber:
                     if self.config.isDebug:
                         print(endTime, " - ", startTime, " = ", execTime)
                         print("")
+                    self.dataPlot.add(execTime)
     
             # User Exit
             except KeyboardInterrupt:
@@ -72,6 +78,8 @@ class Subscriber:
         self.utils.decreaseClientSize()
         # Check if config file needs to be reset
         self.utils.tryReset()
+        # Save data plot
+        self.dataPlot.createLinePlot()
         print("[EXIT] Subscriber suicide success.")
 
     def connect(self):
