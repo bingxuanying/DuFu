@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 class DataPlot:
     dataSet = []
-    filename = " Data Plot.png"
+    filename = "DataPlot.png"
 
     def __init__(self, host):
         self.filename = "Host#" + host.split(".")[-1] + self.filename
@@ -17,8 +17,5 @@ class DataPlot:
         plt.title(self.filename)
         plt.xlabel("Message #")
         plt.ylabel("Transmission Time (s)")
-        
-        my_path = os.path.realpath(__file__) # Figures out the absolute path for you in case your working directory moves around.
-        my_file = 'graph.png'
+        plt.savefig(self.filename, dpi=300, bbox_inches='tight', pad=0.1)
         plt.show()
-        plt.savefig(os.path.join(my_path, "../", my_file))
