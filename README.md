@@ -5,6 +5,24 @@
 
 * The script can only run on Linux System with Python3 and Mininet installed
 
+# Demo
+
+Demo Video URL: https://youtu.be/iZ8yKDVKD3U
+
+00:00​ - 00:37 Brief Introduction
+
+00:37​ - 07:28 Present Approach #1 (with broker)
+
+07:28​ - end Present Approach #2 (non broker mode)
+
+For both approaches, 
+
+* I have first presented that **one** subscriber can successfuly receive messages of the topic it subscribed from publisher. 
+
+* Then **one** subscriber can successfully received from **two** publishers. 
+
+* Finaly, I presented that **two** subscribers can receive identical messages of the same topics they subscribed from publishers, and messages under different topics can only received by those who subscribed the topics. 
+
 
 ## Instructions:
 
