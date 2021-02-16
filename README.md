@@ -1,4 +1,4 @@
-### PubSub-ZMQ
+# PubSub-ZMQ
 
 
 ## Important:
@@ -31,18 +31,18 @@
 
 ## Explaination on Each Part
 
-# Broker
+### Broker
 
-    The frist time the user start the script, the user will be asked if he/she wants to build a broker. If "yes", the code will automatically create a broker for user on current host.
+* The frist time the user start the script, the user will be asked if he/she wants to build a broker. If "yes", the code will automatically create a broker for user on current host.
 
-    After entering either "Broker Mode" or "Non-Broker Mode", the user cannot exit the mode unless program(s) are all turned off on each host.
+* After entering either "Broker Mode" or "Non-Broker Mode", the user cannot exit the mode unless program(s) are all turned off on each host.
 
-    The broker cannot be turned off or stopped by "ctrl + c" if there are publisher(s) or subscriber(s) actively running on other hosts.
+* The broker cannot be turned off or stopped by "ctrl + c" if there are publisher(s) or subscriber(s) actively running on other hosts.
 
-# Publisher
+### Publisher
 
-    The publisher(s) will randomly produce 5-digits zipcode and publish to either broker or subscriber.
+* The publisher(s) will randomly produce 5-digits zipcode and publish to either broker or subscriber.
 
-# Subscriber
+### Subscriber
 
-    The subscriber(s) has to scriber to a **5-digits** zipcode. Otherwise, the program will not take the zipcode, and warn the user.
+* The subscriber(s) has to scriber to a **5-digits** zipcode. Otherwise, the program will not take the zipcode, and warn the user.
