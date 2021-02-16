@@ -32,15 +32,6 @@ class Publisher:
 
         while True:
             try:
-                # # Recv Part
-                # socks = dict(poller.poll(1))
-                # if sktRep in socks and socks.get(sktRep) == zmq.POLLIN:
-                #     inMsg = sktRep.recv_string()
-                #     # sktPub.send_string(self.mogrify(key, body))
-                #     # print("Notified SUBs join " + body)
-                #     sktRep.send_string(self.utils.mogrify("ACK", ""))
-
-                # Send Part
                 zipcode = randrange(10000, 100000)
                 body = {
                     "temperature": randrange(-80, 135),
@@ -49,10 +40,6 @@ class Publisher:
                 }
 
                 self.publish(zipcode, body)
-
-                # Debug Mode
-                if self.config.isDebug:
-                    print(outMsg)
 
             # User Exit
             except KeyboardInterrupt:
@@ -78,13 +65,12 @@ class Publisher:
     """
     def connect(self):
         sktPub = self.mqSkt.getPub()
-
         # Connect to Broker
         if self.config.ifBroker:
-            print("[SETUP] Establishing connection with Broker ...")
             brokerHost = self.utils.getBrokerHost()
             port = self.utils.getPort('broker_xsub')
             addr = "tcp://{0}:{1}".format(brokerHost, port)
+            print("[SETUP] Connecting o Broker at {0} ...".format(addr))
             sktPub.connect(addr)
         # Bind to all hosts
         else:
@@ -99,4 +85,10 @@ class Publisher:
     def publish(self, topic, body):
         sktPub = self.mqSkt.getPub()
         outMsg = self.utils.mogrify(topic, body)
+        # outMsg = self.utils.mogrify("11100", body)
+
+        # Debug Mode
+        if self.config.isDebug:
+            print(outMsg)
+
         sktPub.send_string(outMsg)

@@ -32,7 +32,7 @@ def main():
             else:
                 # Set broker in "abandon" mode
                 config["BROKER"]["host"] = "abandon"
-                with open('./config/connect-soruce.config', 'w') as configfile:
+                with open('./config/system.config', 'w') as configfile:
                     config.write(configfile)
                 run_client(ifBroker)
         # If broker is not wanted / in "abandon" mode

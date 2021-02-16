@@ -11,7 +11,7 @@ def getConfig():
 def reset():
     getConfig()
     config["BROKER"]["host"] = "none"
-    with open('./config/connect-soruce.config', 'w') as configfile:
+    with open('./config/system.config', 'w') as configfile:
         config.write(configfile)
 
 # Update Broker host and size
@@ -19,7 +19,7 @@ def updateBroker(host):
     getConfig()
     config["BROKER"]["host"] = str(host)
     config["BROKER"]["size"] = "1"
-    with open('./config/connect-soruce.config', 'w') as configfile:
+    with open('./config/system.config', 'w') as configfile:
         config.write(configfile)
 
 
@@ -28,7 +28,7 @@ def decreaseSize(topic):
     getConfig()
     currentSize = config[topic]["size"]
     config[topic]["size"] = str(int(currentSize) - 1)
-    with open('./config/connect-soruce.config', 'w') as configfile:
+    with open('./config/system.config', 'w') as configfile:
         config.write(configfile)
 
 # Increase given property's size by 1
@@ -36,5 +36,5 @@ def increaseSize(topic):
     getConfig()
     currentSize = config[topic]["size"]
     config[topic]["size"] = str(int(currentSize) + 1)
-    with open('./config/connect-soruce.config', 'w') as configfile:
+    with open('./config/system.config', 'w') as configfile:
         config.write(configfile)

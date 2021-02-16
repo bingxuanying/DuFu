@@ -8,25 +8,19 @@ class Subscriber:
     node = Node()
     config = None
     utils = ClientUtils()
+    subscription = set()
 
     def __init__(self, config):
         print("[SETUP] Publisher initializing ...")
         # Init config
         self.config = config
 
-        # Establish connection to Broker or Leader Publisher
-        if self.config.ifBroker:
-            print("[SETUP] Establishing connection with Broker ...")
-            # TODO: connect to Broker
-            pass
-        else:
-            # Init socket REQ and REP
-            print("[SETUP] Setup SUB socket ...")
-            self.mqSkt.setupSub()
+        # Init socket REQ and REP
+        print("[SETUP] Setup SUB socket ...")
+        self.mqSkt.setupSub()
 
-            # Config Leader Publisher
-            print("[SETUP] Establishing connection with existing Publisher ...")
-            self.connect()
+        # Establish connections
+        self.connect()
 
         # Increase client size by 1
         self.utils.increaseClientSize()
@@ -38,23 +32,14 @@ class Subscriber:
         sktSub = self.mqSkt.getSub()
         poller = self.mqSkt.getPoller()
 
-
         # Allow user choose what to subscribe
-        while True:
-            topic = input("Enter zipcode you want to subscribe (enter DONE when finish): ")
-            # Leave if DONE
-            if topic == "DONE" or topic == "done":
-                break
-
-            # Make sure user enters valid zipcode
-            if len(topic) == 5 and topic.isnumeric():
-                sktSub.subscribe(topic)
-                print("Subscribe Success!")
-            else:
-                print("Please enter valid zipcode:)")
+        try: self.subscribe()
+        except KeyboardInterrupt:
+            print("[EXIT] Attemptting to suicide ...")
+            self.exit()
+            return
         
         print("Start Listening ...")
-
         # Main loop for receiving messages
         while True:
             try:
@@ -74,8 +59,7 @@ class Subscriber:
                     execTime = timeDiff.total_seconds()
                     if self.config.isDebug:
                         print(endTime, " - ", startTime, " = ", execTime)
-                    
-                    print("")
+                        print("")
     
             # User Exit
             except KeyboardInterrupt:
@@ -92,7 +76,6 @@ class Subscriber:
 
     def connect(self):
         sktSub = self.mqSkt.getSub()
-
         # Connect to Broker
         if self.config.ifBroker:
             print("[SETUP] Establishing connection with Broker ...")
@@ -124,5 +107,37 @@ class Subscriber:
 
         if self.config.isDebug:
             print(endTime, " - ", startTime, " = ", execTime)
-                    
-        print("")
+            print("")
+
+    def subscribe(self):
+        while True:
+            topic = input("Enter zipcode you want to subscribe (enter DONE when finish): ")
+            # Leave if DONE
+            if topic == "DONE" or topic == "done":
+                break
+
+            # Make sure user enters valid zipcode
+            if topic in self.subscription:
+                print("Topic is already subscribed.")
+            elif len(topic) != 5 or not topic.isnumeric():
+                print("Please enter the valid zipcode:)")
+            else:
+                self.subscription.add(topic)
+                print("Subscribe Success!")
+        
+        return self.subscribeExec()
+    
+    def subscribeExec(self):
+        sktSub = self.mqSkt.getSub()
+
+        if self.config.ifBroker:
+            # body = dict()
+            # for k, v in enumerate(self.subscription):
+            #     body[k] = v
+            # outMsg = self.utils.mogrify("SUBSCRIBE", body)
+            # sktSub.subscribe(outMsg)
+            for t in self.subscription:
+                sktSub.subscribe(t)
+        else:
+            for t in self.subscription:
+                sktSub.subscribe(t)
