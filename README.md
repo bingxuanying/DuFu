@@ -9,11 +9,11 @@
 
 Demo Video URL: https://youtu.be/iZ8yKDVKD3U
 
-00:00​ - 00:37 Brief Introduction
+* 00:00​ - 00:37 Brief Introduction
 
-00:37​ - 07:28 Present Approach #1 (with broker)
+* 00:37​ - 07:28 Present Approach #1 (with broker)
 
-07:28​ - end Present Approach #2 (non broker mode)
+* 07:28​ - end Present Approach #2 (non broker mode)
 
 For both approaches, 
 
