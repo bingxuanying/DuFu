@@ -16,17 +16,23 @@
 
 4. Follow instructions on command line to configure the system and create instance
 
-    - Broker: "y" => will create a broker and enter broker mode
-              "n" => will enter non-broker mode
+    * Broker:
+        * "y" => will create a broker and enter broker mode
+        * "n" => will enter non-broker mode
 
-    - Debug: "y" => will print out the data being sent or received
-             "n" => will not print anything
+    * Debug: 
+        * "y" => will print out the data being sent or received
+        * "n" => will not print anything
     
-    - Pub/Sub: "pub" => create a publisher
-               "sub" => create a subscriber
+    * Pub/Sub:\
+        * "pub" => create a publisher
+        * "sub" => create a subscriber
     
-    - (Only in Sub): enter the zipcode you want to subscribe.
-                     enter "done" to indicate finish entering
+    * (Only in Sub): 
+        * enter the zipcode you want to subscribe.
+        * enter "done" to indicate finish entering
+    
+    * Exit: Prese "Ctrl + C" to exit and terminate the program
 
 
 ## Explaination on Each Part
@@ -46,3 +52,5 @@
 ### Subscriber
 
 * The subscriber(s) has to scriber to a **5-digits** zipcode. Otherwise, the program will not take the zipcode, and warn the user.
+
+* When exit, the program will automatically create plot that records the time it taks for the user to receive each pieces of data. There are some plot images on the root folder. Feel free to check it out.
