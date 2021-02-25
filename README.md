@@ -30,7 +30,7 @@ For both approaches,
 
 2. run "sudo mn -x --topo=tree,fanout=3,depth=2"
 
-3. On each xTerms Window, run "python3 ./run_test.py" under folder "PubSub-ZMQ"
+3. On each xTerms Window, run "python3 ./run_test.py" under folder "PubSub-ZMQ" **on host (h1, h2, etc.) but NOT no switch (s1, s2, etc.)**
 
 4. Follow instructions on command line to configure the system and create instance
 
