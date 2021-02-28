@@ -1,94 +1,89 @@
-from os import times
-from common import *
-import zmq
 from random import randrange
 from datetime import datetime
+import zmq
+from common import *
 
 
 class Publisher:
-    mqSkt = MQSocket()
-    node = Node()
+    socks = ClientSockets()
     config = None
-    utils = ClientUtils()
+    serializer = Serializer()
 
     def __init__(self, config):
-        print("[SETUP] Publisher initializing ...")
-        # Init config
-        self.config = config
+        print("[SETUP] Initialize a publisher instance ...")
+        # Init publisher configuration
+        self.config = PublisherConfig(isDebug)
 
-        # Setup Socket as PUB
-        print("[SETUP] Setup PUB sockets ...")
-        self.mqSkt.setupPub()
+        # Init Socket PUB
+        print("[SETUP] Create PUB socket ...")
+        self.socks.setPub()
 
-        # Establish connections
+        print("[SETUP] Connect to Service Discovery Server ...")
+        # TODO: Establish connections
         self.connect()
 
-        # Increase client size by 1
-        self.utils.increaseClientSize()
 
+    """
+    **Start running the current subscriber and listening to ports
+    """
     def run(self):
-        print("Local IP Addr: " + self.node.host)
-        # poller = self.mqSkt.getPoller()
+        print("[RUN] Build Success. Runs on: " + self.config.host)
+        print("[RUN] Start publishing messages ... ")
 
         while True:
             try:
+                # Randomly produce zipcode and data
                 zipcode = randrange(10000, 100000)
                 body = {
                     "temperature": randrange(-80, 135),
                     "relhumidity": randrange(10, 60),
                     "timestamp": datetime.now().strftime(self.config.timeFormat)
                 }
-
+                # Send message
                 self.publish(zipcode, body)
 
             # User Exit
             except KeyboardInterrupt:
-                print("[EXIT] Attemptting to suicide ...")
+                print("[EXIT] Attemptting to terminate ...")
                 self.exit()
                 break
 
-    def exit(self):
-        sktPub = self.mqSkt.getPub()
-        msg = {
-            "host": self.node.host
-        }
-        sktPub.send_string(self.utils.mogrify("LEAVE", msg))
-
-        # Decrease client size by 1
-        self.utils.decreaseClientSize()
-        # Check if config file needs to be reset
-        self.utils.tryReset()
-        print("[EXIT] Publisher suicide success.")
 
     """
-    **Connect to broker
+    **Terminate the current publisher instance
+    """    
+    def exit(self):
+        # TODO: Notify and disconnect from service discovery server (ZooKeeper)
+        print("[EXIT] Publisher is terminated.")
+
+
+    """
+    TODO: **Connect to service discovery server (ZooKeeper)
     """
     def connect(self):
-        sktPub = self.mqSkt.getPub()
-        # Connect to Broker
-        if self.config.ifBroker:
-            brokerHost = self.utils.getBrokerHost()
-            port = self.utils.getPort('broker_xsub')
-            addr = "tcp://{0}:{1}".format(brokerHost, port)
-            print("[SETUP] Connecting o Broker at {0} ...".format(addr))
-            sktPub.connect(addr)
-        # Bind to all hosts
-        else:
-            print("[SETUP] Binding to all hosts ...")
-            sktPub.bind(
-                "tcp://*:{0}".format(self.utils.getPort("pub")))
+        pubSkt = self.socks.getPub()
+        # # Connect to Broker
+        # if self.config.ifBroker:
+        #     addr = "tcp://{0}:{1}".format(brokerHost, port)
+        #     print("[SETUP] Connecting o Broker at {0} ...".format(addr))
+        #     pubSkt.connect(addr)
+        # # Bind to all hosts
+        # else:
+        #     print("[SETUP] Binding to all hosts ...")
+        #     pubSkt.bind(
+        #         "tcp://*:{0}".format(self.utils.getPort("pub")))
     
+
     """
     **Publish messages
     @param topic + message in Json format
     """
     def publish(self, topic, body):
-        sktPub = self.mqSkt.getPub()
-        outMsg = self.utils.mogrify(topic, body)
-        # outMsg = self.utils.mogrify("11100", body)
+        pubSkt = self.socks.getPub()
+        msg = self.serializer.JsonMogrify(topic, body)
 
         # Debug Mode
         if self.config.isDebug:
-            print(outMsg)
+            print(msg)
 
-        sktPub.send_string(outMsg)
+        pubSkt.send_string(msg)

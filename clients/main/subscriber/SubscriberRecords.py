@@ -1,7 +1,6 @@
-import os
 from matplotlib import pyplot as plt
 
-class DataPlot:
+class SubscriberRecords:
     dataSet = []
     filename = "DataPlot.png"
 
