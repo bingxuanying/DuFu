@@ -1,151 +1,102 @@
 from datetime import datetime
-from common import *
-from DataPlot import DataPlot
 import zmq
+from common import *
 
 
 class Subscriber:
-    mqSkt = MQSocket()
-    node = Node()
+    socks = ClientSockets()
     config = None
-    utils = ClientUtils()
-    subscription = set()
-    dataPlot = None
+    serializer = Serializer()
+    records = None
+    subscription = None
 
-    def __init__(self, config):
-        print("[SETUP] Publisher initializing ...")
-        # Init config
-        self.config = config
+    def __init__(self, isDebug):
+        print("[PRE] Subscribe to topics ...")
+        # Let user type zipcodes they want to subscribe
+        self.subscription = Subscription()
 
-        # Init socket REQ and REP
-        print("[SETUP] Setup SUB socket ...")
-        self.mqSkt.setupSub()
+        print("[SETUP] Initialize a subscriber instance ...")
+        # Init subscriber configuration
+        self.config = SubscriberConfig(isDebug)
 
+        # Init socket SUB
+        print("[SETUP] Create SUB socket ...")
+        self.socks.setSub()
+
+        print("[SETUP] Begin recording incoming data ...")
         # Init data plot instance
-        self.dataPlot = DataPlot(self.node.host)
+        self.records = SubscriberRecords(self.config.host)
 
-        # Establish connections
+        print("[SETUP] Connect to Service Discovery Server ...")
+        # TODO: Establish connections
         self.connect()
 
-        # Increase client size by 1
-        self.utils.increaseClientSize()
 
+    """
+    **Start running the current subscriber and listening to ports
+    """
     def run(self):
-        print("Local IP Addr: " + self.node.host)
+        print("[RUN] Build Success. Runs on: " + self.config.host)
+        print("[RUN] Start publishing messages ... ")
 
         # Acquire sockets and poller
-        sktSub = self.mqSkt.getSub()
-        poller = self.mqSkt.getPoller()
-
-        # Allow user choose what to subscribe
-        try: self.subscribe()
-        except KeyboardInterrupt:
-            print("[EXIT] Attemptting to suicide ...")
-            self.exit()
-            return
+        subSkt = self.socks.getSub()
+        poller = self.socks.getPoller()
         
-        print("Start Listening ...")
         # Main loop for receiving messages
         while True:
             try:
-                socks = dict(poller.poll(100))
-                if sktSub in socks and socks.get(sktSub) == zmq.POLLIN:
-                    message = sktSub.recv_string()
-                    t, m = self.utils.demogrify(message)
-
-                    if self.config.isDebug:
-                        print("topic: " + t)
-                        for k in m:
-                            print(str(k) + ": " + str(m[k]))
-
-                    startTime = datetime.strptime(m["timestamp"], self.config.timeFormat)
-                    endTime = datetime.now()
-                    timeDiff = (endTime - startTime)
-                    execTime = timeDiff.total_seconds()
-                    if self.config.isDebug:
-                        print(endTime, " - ", startTime, " = ", execTime)
-                        print("")
-                    self.dataPlot.add(execTime)
+                pollerSocks = dict(poller.poll(100))
+                if subSkt in pollerSocks and pollerSocks.get(subSkt) == zmq.POLLIN:
+                    message = subSkt.recv_string()
+                    transmissionTime = self.notify(message)
+                    self.records.add(transmissionTime)
     
             # User Exit
             except KeyboardInterrupt:
-                print("[EXIT] Attemptting to suicide ...")
+                print("[EXIT] Attempt to terminate ...")
                 self.exit()
                 break
 
+
+    """
+    **Terminate the current subscriber instance
+    """    
     def exit(self):
-        # Decrease client size by 1
-        self.utils.decreaseClientSize()
-        # Check if config file needs to be reset
-        self.utils.tryReset()
-        # Save data plot
-        self.dataPlot.createLinePlot()
-        print("[EXIT] Subscriber suicide success.")
+        # Create data graph
+        self.records.createLinePlot()
+        # TODO: Notify and disconnect from service discovery server (ZooKeeper)
+        print("[EXIT] Subscriber is terminated.")
 
+
+    """
+    TODO: **Connect to service discovery server (ZooKeeper)
+    @param 
+    """    
     def connect(self):
-        sktSub = self.mqSkt.getSub()
-        # Connect to Broker
-        if self.config.ifBroker:
-            print("[SETUP] Establishing connection with Broker ...")
-            brokerHost = self.utils.getBrokerHost()
-            port = self.utils.getPort('broker_xpub')
-            addr = "tcp://{0}:{1}".format(brokerHost, port)
-            sktSub.connect(addr)
-        # Flood through internet
-        else:
-            print("[SETUP] Flooding through internet to connect ...")
-            masked = self.node.host.rpartition('.')[0]
-            port = self.utils.getPort('pub')
-
-            # Flood through internet
-            for last in range(1, 256):
-                addr = "tcp://{0}.{1}:{2}".format(masked, last, port)
-                sktSub.connect(addr)
+        subSkt = self.socks.getSub()
     
-    def notify(self, topic, message):
+
+    """
+    **Unpack and process the receiving message
+    @param message
+    @return transmissionTime: Time it takes to receve the message
+    """    
+    def notify(self, message):
+        topic, body = self.serializer.JsonDemogrify(message)
+
         if self.config.isDebug:
             print("topic: " + topic)
-            for k in message:
-                print(str(k) + ": " + str(message[k]))
+            for k in body:
+                print(str(k) + ": " + str(body[k]))
 
-        startTime = datetime.strptime(message["timestamp"], self.config.timeFormat)
+        startTime = datetime.strptime(body["timestamp"], self.config.timeFormat)
         endTime = datetime.now()
         timeDiff = (endTime - startTime)
-        execTime = timeDiff.total_seconds()
+        transmissionTime = timeDiff.total_seconds()
 
         if self.config.isDebug:
-            print(endTime, " - ", startTime, " = ", execTime)
+            print("Transmission time = ", transmissionTime)
             print("")
-
-    def subscribe(self):
-        while True:
-            topic = input("Enter zipcode you want to subscribe (enter DONE when finish): ")
-            # Leave if DONE
-            if topic == "DONE" or topic == "done":
-                break
-
-            # Make sure user enters valid zipcode
-            if topic in self.subscription:
-                print("Topic is already subscribed.")
-            elif len(topic) != 5 or not topic.isnumeric():
-                print("Please enter the valid zipcode:)")
-            else:
-                self.subscription.add(topic)
-                print("Subscribe Success!")
         
-        return self.subscribeExec()
-    
-    def subscribeExec(self):
-        sktSub = self.mqSkt.getSub()
-
-        if self.config.ifBroker:
-            # body = dict()
-            # for k, v in enumerate(self.subscription):
-            #     body[k] = v
-            # outMsg = self.utils.mogrify("SUBSCRIBE", body)
-            # sktSub.subscribe(outMsg)
-            for t in self.subscription:
-                sktSub.subscribe(t)
-        else:
-            for t in self.subscription:
-                sktSub.subscribe(t)
+        return transmissionTime

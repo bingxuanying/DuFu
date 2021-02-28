@@ -3,23 +3,25 @@ import sys
 import netifaces
 
 
-class ClientConfig:
+class ServerConfig:
     isDebug = False
-    role = None
+    role = "broker"
     host = None
-    configParser = ConfigParser()
-    timeFormat = "%Y/%d/%m/%H/%M/%S/%f"
+    port = {}
 
-    def __init__(self, role:str, isDebug:bool):
+    def __init__(self, isDebug:bool):
         # Config if in Debug mode
         self.isDebug = isDebug
-
-        # Config role to be PUB/SUB/BROKER
-        self.role = role
-
+        
         # Get host address
         self.getHostAddr()
-        
+
+        # Copy the subset of properties relevant to server
+        configParser = ConfigParser()
+        serverProps = configParser.read("./config/server.config")
+        self.port["xpub"] = serverProps["broker"]["port.xpub"]
+        self.port["xsub"] = serverProps["broker"]["port.xsub"]
+
     # Get current host ip address
     def getHostAddr(self):
         nameLst = netifaces.interfaces()
