@@ -10,9 +10,9 @@ class BrokerServer:
     broker = None
 
 
-    def __init__(self, isDebug):
+    def __init__(self, debug_mode=False):
         # Init server config
-        self.config = ServerConfig(isDebug)
+        self.config = ServerConfig(debug_mode)
 
         # Init zookeeper utils
         self.zk_utils = ZookeeperLeaderElector()
@@ -55,4 +55,4 @@ class BrokerServer:
     **Terminate broker server
     """
     def exit(self):
-        print("[EXIT] Broker server {} is terminated.".format(self.config.id))
+        print("[EXIT] Shut down Broker server {}.".format(self.config.id))

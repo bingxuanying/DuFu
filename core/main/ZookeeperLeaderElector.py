@@ -45,7 +45,8 @@ class ZookeeperLeaderElector:
         # Exit
         except KeyboardInterrupt:
             self.exit()
-            
+            raise KeyboardInterrupt
+
         # Alwasys stop the zk instance and disconnect
         finally:
             self.zk.stop()
@@ -53,4 +54,4 @@ class ZookeeperLeaderElector:
     
 
     def exit(self):
-        print("[EXIT] Disconnect broker server from zookeeper server.")
+        print("[EXIT] Disconnect from zookeeper server.")

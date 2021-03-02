@@ -34,13 +34,13 @@ class ServerSockets:
 
         server_props = ConfigParser()
         server_props.read(config_file_dir)
-        self.port["xpub"] = server_props["broker"]["port.xpub"]
-        self.port["xsub"] = server_props["broker"]["port.xsub"]
+        self.port["xpub"] = server_props["port"]["xpub"]
+        self.port["xsub"] = server_props["port"]["xsub"]
 
 
     def _init_socks(self):
         if not self.port or len(self.port) < 2:
-            sys.exit("NO valid ports to bind.")
+            sys.exit("NO valid port to bind.")
 
         self._init_xpub()
         self._init_xsub()
