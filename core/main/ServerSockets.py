@@ -1,38 +1,68 @@
+from configparser import ConfigParser
 import zmq
+import sys
 
 
 class ServerSockets:
-    ctx = zmq.Context()
+    ctx = None
     socks = dict()
-    poller = zmq.Poller()
+    poller = None
+    port = dict()
+
 
     def __init__(self):
-        pass
+        # Init socket context
+        self.ctx = zmq.Context()
 
-    def startup(self):
-        self.setXPub()
-        self.setXSub()
+        # Init poller
+        self.poller = zmq.Poller()
 
-    def setXSub(self):
+        # Init ports
+        self._init_port_config()
+
+        # Init socks
+        self._init_socks()
+
+
+    # Init the subset of properties relevant to server
+    def _init_port_config(self):
+        config_parser = ConfigParser()
+        server_props = config_parser.read("./config/server.config")
+        self.port["xpub"] = server_props["broker"]["port.xpub"]
+        self.port["xsub"] = server_props["broker"]["port.xsub"]
+
+
+    def _init_socks(self):
+        if not self.port or len(self.port) < 2:
+            sys.exit("NO valid ports to bind.")
+
+        self._init_xpub()
+        self._init_xsub()
+
+
+    def _init_xsub(self):
         self.socks["xsub"] = self.ctx.socket(zmq.XSUB)
-        # TODO: port
-        self.socks["xsub"].bind("tcp://*:{0}".format())
+        self.socks["xsub"].bind("tcp://*:{0}".format(self.port["xsub"]))
         self.poller.register(self.socks["xsub"], zmq.POLLIN)
 
-    def setXPub(self):
+
+    def _init_xpub(self):
         self.socks["xpub"] = self.ctx.socket(zmq.XPUB)
         self.socks["xpub"].setsockopt(zmq.XPUB_VERBOSE, 1)
-        # TODO: port
-        self.socks["xpub"].bind("tcp://*:{0}".format())
+        self.socks["xpub"].bind("tcp://*:{0}".format(self.port["xpub"]))
 
-    def getXSub(self):
+
+    def get_xsub(self):
         return self.socks["xsub"]
 
-    def getXPub(self):
+
+    def get_xpub(self):
         return self.socks["xpub"]
 
-    def getPoller(self):
+
+    def get_poller(self):
         return self.poller
+    
     
     def close(self):
         self.ctx.destroy();

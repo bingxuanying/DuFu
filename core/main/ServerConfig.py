@@ -1,35 +1,33 @@
-from configparser import ConfigParser
 import sys
+import uuid
 import netifaces
 
 
 class ServerConfig:
-    isDebug = False
-    role = "broker"
+    id = None
     host = None
-    port = {}
+    debug_mode = False
 
-    def __init__(self, isDebug:bool):
-        # Config if in Debug mode
-        self.isDebug = isDebug
+
+    def __init__(self, debug_mode:bool):
+        # Set server id
+        self.id = str(uuid.uuid4())
+
+        # Init debug mode
+        self.debug_mode = debug_mode
         
-        # Get host address
-        self.getHostAddr()
+        # Init host address
+        self._init_host_addr()
 
-        # Copy the subset of properties relevant to server
-        configParser = ConfigParser()
-        serverProps = configParser.read("./config/server.config")
-        self.port["xpub"] = serverProps["broker"]["port.xpub"]
-        self.port["xsub"] = serverProps["broker"]["port.xsub"]
+        # Init the subset of properties relevant to server
+        self._init_port_config()
 
-    # Get current host ip address
-    def getHostAddr(self):
-        nameLst = netifaces.interfaces()
-        for name in nameLst:
+
+    # Init host ip address
+    def _init_host_addr(self):
+        name_lst = netifaces.interfaces()
+        for name in name_lst:
             if len(name) > 4 and name[len(name)-4:] == "eth0":
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']
                 break
-        
-        if not self.host:
-            sys.exit("Setting up client host ERROR")

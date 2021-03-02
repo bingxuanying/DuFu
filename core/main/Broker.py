@@ -1,31 +1,33 @@
-import sys
-import zmq
 from collections import defaultdict 
 
 from ServerSockets import ServerSockets
 
 
 class Broker:
-    socks = ServerSockets()
+    socks = None
+    subscription = defaultdict(int)
 
-    def __init__(self, isDebug=True):
+
+    def __init__(self, config):
         # Start Sockets XPUB and XSUB
-        print("[SETUP] Start XPUB and XSUB socket ...")
-        self.socks.startup()
+        print("[SETUP/BROKER] Init broker sever sockets ...")
+        self.socks = ServerSockets()
     
+
     """
     **Start running the current broker
     """
     def run(self):
+        print ("[RUN] Runing ...")
+
         # Acquire sockets and poller
-        xSubSkt = self.socks.getXSub()
-        xPubSkt = self.socks.getXPub()
-        poller = self.socks.getPoller()
+        xsub_sock = self.socks.get_xsub()
+        xpub_sock = self.socks.get_xpub()
+        poller = self.socks.get_poller()
 
         # TODO: subscribe with publishers
         # !! self.xSubscribe("", xsub)
 
-        print ("[SETUP] Done! Runing ...")
         while True:
             try:
                 socks = dict(poller.poll(1000))
@@ -34,8 +36,8 @@ class Broker:
                     # print ("Events received = {}".format (socks))
 
                 # From publishers
-                if xSubSkt in socks:
-                    message = xSubSkt.recv_string()
+                if xsub_sock in socks:
+                    message = xsub_sock.recv_string()
                     # !! topic, message = self.utils.demogrify(message)
 
                     # !! if self.isDebug:
@@ -43,18 +45,21 @@ class Broker:
                         # for key in message:
                         #     print(str(key) + ": " + str(message[key]))
 
-                    xPubSkt.send_string(message)
+                    xpub_sock.send_string(message)
 
             except KeyboardInterrupt:
-                print("[EXIT] Attemptting to suicide ...")
+                print("[EXIT] Broker attempts to suicide ...")
+                self.exit()
     
+
     """
     **Terminate the current broker
     """
     def exit(self):
-        # TODO: Notify and disconnect from service discovery server (ZooKeeper)
+        # TODO: Unsubscriber from publishers
         print("[EXIT] Broker is terminated.")
     
+
     # """
     # ** Subscribe topics with publishers
     # @return topic

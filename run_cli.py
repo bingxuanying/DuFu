@@ -1,4 +1,4 @@
-import setup_directory
+import pathex
 import logging
 
 from Broker import Broker
