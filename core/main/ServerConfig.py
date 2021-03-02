@@ -19,9 +19,6 @@ class ServerConfig:
         # Init host address
         self._init_host_addr()
 
-        # Init the subset of properties relevant to server
-        self._init_port_config()
-
 
     # Init host ip address
     def _init_host_addr(self):

@@ -1,6 +1,6 @@
 from collections import defaultdict 
 
-from ServerSockets import ServerSockets
+from .ServerSockets import ServerSockets
 
 
 class Broker:
@@ -8,7 +8,7 @@ class Broker:
     subscription = defaultdict(int)
 
 
-    def __init__(self, config):
+    def __init__(self):
         # Start Sockets XPUB and XSUB
         print("[SETUP/BROKER] Init broker sever sockets ...")
         self.socks = ServerSockets()
@@ -48,7 +48,6 @@ class Broker:
                     xpub_sock.send_string(message)
 
             except KeyboardInterrupt:
-                print("[EXIT] Broker attempts to suicide ...")
                 self.exit()
     
 
@@ -57,7 +56,8 @@ class Broker:
     """
     def exit(self):
         # TODO: Unsubscriber from publishers
-        print("[EXIT] Broker is terminated.")
+        print("[EXIT] Terminate broker ...")
+        raise KeyboardInterrupt
     
 
     # """

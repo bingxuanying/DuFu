@@ -1,18 +1,25 @@
 from configparser import ConfigParser
 from kazoo.client import KazooClient
-
+from os import path
 
 class ZookeeperLeaderElector:
     zk = None
     zookeeper_connection_url = None
+    config_file_dir = None
 
 
     def __init__(self):
-        # Get the subset of properties relevant to zookeeper
-        config_parser = ConfigParser()
-        server_props = config_parser.read("./config/zookeeper.config")
-        self.zookeeper_connection_url = server_props["zookeeper"]["connect"]
+        # Locate config file
+        current_dir = path.dirname(path.realpath(__file__))
+        parent_dir = path.dirname(current_dir)
+        self.config_file_dir = path.join(path.dirname(parent_dir), 'config', 'zookeeper.config')
 
+        # Get the subset of properties relevant to zookeeper
+        server_props = ConfigParser()
+        server_props.read(self.config_file_dir)
+        self.zookeeper_connection_url = server_props["connect"]["url"]
+
+        print(self.zookeeper_connection_url)
         # Init zookeeper client instance
         self.zk = KazooClient(self.zookeeper_connection_url)
 

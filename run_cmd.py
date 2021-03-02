@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    urlFormat = re.compile("^((\d{,3})\.){3}\d{,3}(:[1-9]\d{,3})?$")
-    if urlFormat.match(args.zk) is None:
+    url_format = re.compile("^((\d{,3})\.){3}\d{,3}(:[1-9]\d{,3})?$")
+    if url_format.match(args.zk) is None:
         parser.error("invalid zookeeper connection url.")
     
     print(args)

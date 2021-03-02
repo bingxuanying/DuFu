@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 import zmq
 import sys
+from os import path
 
 
 class ServerSockets:
@@ -26,8 +27,13 @@ class ServerSockets:
 
     # Init the subset of properties relevant to server
     def _init_port_config(self):
-        config_parser = ConfigParser()
-        server_props = config_parser.read("./config/server.config")
+        # Locate config file
+        current_dir = path.dirname(path.realpath(__file__))
+        parent_dir = path.dirname(current_dir)
+        config_file_dir = path.join(path.dirname(parent_dir), 'config', 'server.config')
+
+        server_props = ConfigParser()
+        server_props.read(config_file_dir)
         self.port["xpub"] = server_props["broker"]["port.xpub"]
         self.port["xsub"] = server_props["broker"]["port.xsub"]
 

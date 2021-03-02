@@ -1,7 +1,7 @@
 import sys
-from ServerConfig import ServerConfig
-from ZookeeperLeaderElector import ZookeeperLeaderElector
-from Broker import Broker
+from .ServerConfig import ServerConfig
+from .ZookeeperLeaderElector import ZookeeperLeaderElector
+from .Broker import Broker
 
 
 class BrokerServer:
@@ -12,7 +12,7 @@ class BrokerServer:
 
     def __init__(self, isDebug):
         # Init server config
-        self.config = ServerConfig()
+        self.config = ServerConfig(isDebug)
 
         # Init zookeeper utils
         self.zk_utils = ZookeeperLeaderElector()
