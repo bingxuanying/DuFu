@@ -1,5 +1,6 @@
 import uuid
 import netifaces
+import sys
 
 
 class ServerConfig:
@@ -27,3 +28,11 @@ class ServerConfig:
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']
                 break
+    
+    def ready(self):
+        if not self.id:
+            sys.exit("NO valid server id.")
+        elif not self.host:
+            sys.exit("NO valid host ip address.")
+        
+        return True

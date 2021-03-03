@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from kazoo.client import KazooClient
 from os import path
+import sys
 
 class ZookeeperLeaderElector:
     zk = None
@@ -10,18 +11,27 @@ class ZookeeperLeaderElector:
 
     def __init__(self):
         # Locate config file
+        self._get_config_file_addr()
+
+        # Get the subset of properties relevant to zookeeper
+        self._init_config_props()
+
+        # Init zookeeper client instance
+        self.zk = KazooClient(self.zookeeper_connection_url)
+
+
+    # Locate config file
+    def _get_config_file_addr(self):
         current_dir = path.dirname(path.realpath(__file__))
         parent_dir = path.dirname(current_dir)
         self.config_file_dir = path.join(path.dirname(parent_dir), 'config', 'zookeeper.config')
 
-        # Get the subset of properties relevant to zookeeper
+
+    # Get the subset of properties relevant to zookeeper
+    def _init_config_props(self):
         server_props = ConfigParser()
         server_props.read(self.config_file_dir)
         self.zookeeper_connection_url = server_props["connect"]["url"]
-
-        print(self.zookeeper_connection_url)
-        # Init zookeeper client instance
-        self.zk = KazooClient(self.zookeeper_connection_url)
 
 
     def startup(self, server_id, host_ip, broker_server_start):
@@ -55,3 +65,13 @@ class ZookeeperLeaderElector:
     def exit(self):
         print("[EXIT] Disconnect from zookeeper server.")
         raise KeyboardInterrupt
+
+    def ready(self):
+        if not self.config_file_dir:
+            sys.exit("Doesn't find the config file.")
+        elif not self.zookeeper_connection_url:
+            sys.exit("Zookeeper server url is EMPTY.")
+        elif not self.zk:
+            sys.exit("Zookeeper instance instantiation FAILED.")
+        
+        return True

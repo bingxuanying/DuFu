@@ -1,33 +1,61 @@
 from kazoo.client import KazooClient
 import uuid
+from os import path
+from configparser import ConfigParser
+import sys
 
 
 class ZKClient:
     zk = None
+    config_file_dir = None
+    zookeeper_connection_url = None
+    broker_server_default_port = None
+    leader_broker_url = None
 
-    def __init__(self, zookeeperConnectionURL):
-        self.zk = KazooClient(zookeeperConnectionURL)
+    def __init__(self):
+        # Get config file
+        self._get_config_file_addr()
 
+        # Init publisher props
+        self._init_config_props()
+
+        # Init zookeeper client instance
+        self.zk = KazooClient(self.zookeeper_connection_url, read_only=True)
+
+
+    # Locate config file
+    def _get_config_file_addr(self):
+        current_dir = path.dirname(path.realpath(__file__))
+        parent_dir = path.dirname(current_dir)
+        self.config_file_dir = path.join(path.dirname(parent_dir), 'config', 'publisher.config')
+
+
+    # Get the subset of properties relevant to broker server and zookeeper
+    def _init_config_props(self):
+        props = ConfigParser()
+        props.read(self.config_file_dir)
+        self.broker_server_default_port = props["broker_server"]["port"]
+        self.zookeeper_connection_url = props["service_discovery"]["connect"]
+
+
+    # Called when first start
     def startup(self):
         self.zk.start()
+        self.find_leader_broker()
 
-        try:
-            # Ensure a path, create if necessary
-            self.zk.ensure_path("/cluster")
 
-            # Create a node with data
-            node = "node" + str(uuid.uuid4())
-            path = "/cluster/" + node
-            self.zk.create_async(path, b"host ip", ephemeral=True)
+    # Find the leader broker to connect
+    def find_leader_broker(self):
+        ret = self.zk.connected
+        print(type(ret))
+        print(ret)
 
-            election = self.zk.Election("/cluster", node)
-            election.run(self.watch)
-        except KeyboardInterrupt:
-            _node = election.contenders()[0]
-            data, stat = self.zk.get(node)
-        finally:
-            self.zk.stop()
-            self.zk.close()
+        election = self.zk.Election("/cluster")
+        leader_node = election.contenders()[0]
+        data, _ = self.zk.get(leader_node)
+
+        self.leader_broker_url = data + ":" + self.broker_server_default_port
+        print(self.leader_broker_url)
 
 
     def watch(self, msg):
@@ -35,3 +63,23 @@ class ZKClient:
         print("done " + str(msg))
         while True:
             continue
+    
+    
+    # Check if props are ready and error free
+    def ready(self):
+        if not self.config_file_dir:
+            sys.exit("Doesn't find the config file.")
+        elif not self.broker_server_default_port:
+            sys.exit("Broker server default port is not given.")
+        elif not self.zookeeper_connection_url:
+            sys.exit("Zookeeper server url is EMPTY.")
+        elif not self.zk:
+            sys.exit("Zookeeper instance instantiation FAILED.")
+    
+        return True
+
+    
+    # Must called on exit
+    def exit(self):
+        self.zk.stop()
+        self.zk.close()

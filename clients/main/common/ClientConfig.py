@@ -1,29 +1,27 @@
-from configparser import ConfigParser
 import sys
 import netifaces
 
 
 class ClientConfig:
-    isDebug = False
+    debug_mode = False
     role = None
     host = None
-    configParser = ConfigParser()
-    timeFormat = "%Y/%d/%m/%H/%M/%S/%f"
+    time_format = "%Y/%d/%m %H:%M:%S.%f"
 
-    def __init__(self, role:str, isDebug:bool):
-        # Config if in Debug mode
-        self.isDebug = isDebug
+    def __init__(self, role:str, debug_mode:bool=False):
+        # Init debug mode
+        self.debug_mode = debug_mode
 
-        # Config role to be PUB/SUB/BROKER
+        # Config role as PUB/SUB
         self.role = role
 
-        # Get host address
-        self.getHostAddr()
+        # Init host address
+        self._init_host_addr()
         
     # Get current host ip address
-    def getHostAddr(self):
-        nameLst = netifaces.interfaces()
-        for name in nameLst:
+    def _init_host_addr(self):
+        name_lst = netifaces.interfaces()
+        for name in name_lst:
             if len(name) > 4 and name[len(name)-4:] == "eth0":
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']

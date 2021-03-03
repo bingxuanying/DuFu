@@ -1,22 +1,22 @@
 from random import randrange
 from datetime import datetime
-import zmq
+from .PublisherSockets import PublisherSockets
+from .PublisherConfig import PublisherConfig
 from common import *
 
 
 class Publisher:
-    socks = ClientSockets()
+    socks = None
     config = None
     serializer = Serializer()
 
-    def __init__(self, config):
+    def __init__(self, debug_mode):
         print("[SETUP] Initialize a publisher instance ...")
-        # Init publisher configuration
-        self.config = PublisherConfig(isDebug)
+        # Init sockets
+        self.socks = PublisherSockets()
 
-        # Init Socket PUB
-        print("[SETUP] Create PUB socket ...")
-        self.socks.setPub()
+        # Init publisher configuration
+        self.config = PublisherConfig(debug_mode)
 
         print("[SETUP] Connect to Service Discovery Server ...")
         # TODO: Establish connections

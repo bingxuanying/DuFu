@@ -7,5 +7,7 @@ sys.path.append(parentdir)
 from main.common.ZKClient import ZKClient
 
 if __name__ == "__main__":
-    zk = ZKClient("127.0.0.1:2181")
-    zk.startup()
+    zk_utils = ZKClient()
+
+    if zk_utils.ready():
+        zk_utils.startup()

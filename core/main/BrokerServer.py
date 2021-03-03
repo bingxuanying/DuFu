@@ -27,16 +27,11 @@ class BrokerServer:
     def startable(self):
         print("[SETUP/SERVER] Check if startable ...")
 
-        if not self.zk_utils:
-            sys.exit("NO valid zookeeper server url to connect.")
-        
-        if not self.config.id:
-            sys.exit("NO valid server id.")
-        
-        if not self.config.host:
-            sys.exit("NO valid host ip address.")
-        
-        self._start()
+        # Check if ZK Utils is ready (error free)
+        # Check if config correctly
+        # Start if precheck doesn't raise any error
+        if self.zk_utils.ready() and self.config.ready():
+            self._start()
 
 
     """
