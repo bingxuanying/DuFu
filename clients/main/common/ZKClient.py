@@ -10,6 +10,7 @@ class ZKClient:
     config_file_dir = None
     zookeeper_connection_url = None
     broker_server_default_port = None
+    leader_broker_node_path = None
     leader_broker_url = None
 
     def __init__(self):
@@ -26,7 +27,7 @@ class ZKClient:
     # Locate config file
     def _get_config_file_addr(self):
         current_dir = path.dirname(path.realpath(__file__))
-        parent_dir = path.dirname(current_dir)
+        parent_dir = path.dirname(path.dirname(current_dir))
         self.config_file_dir = path.join(path.dirname(parent_dir), 'config', 'publisher.config')
 
 
@@ -47,23 +48,26 @@ class ZKClient:
     # Find the leader broker to connect
     def find_leader_broker(self):
         ret = self.zk.connected
-        print(type(ret))
-        print(ret)
 
         election = self.zk.Election("/cluster")
         leader_node = election.contenders()[0]
-        data, _ = self.zk.get(leader_node)
+        self.leader_broker_node_path = "/cluster/" + leader_node
 
-        self.leader_broker_url = data + ":" + self.broker_server_default_port
+        data, _ = self.zk.get(self.leader_broker_node_path)
+        leader_host = data.decode("utf-8")
+        self.leader_broker_url = leader_host + ":" + self.broker_server_default_port
         print(self.leader_broker_url)
 
+        self.watch()
 
-    def watch(self, msg):
-        # TODO: if node is delete, get new leader to connect
-        print("done " + str(msg))
-        while True:
-            continue
-    
+    def watch(self):
+        @self.zk.DataWatch(self.leader_broker_node_path)
+        def my_func(data, stat, event):
+            if stat:
+                print("Start watching on leader node")
+            else:
+                self.find_leader_broker()
+
     
     # Check if props are ready and error free
     def ready(self):
