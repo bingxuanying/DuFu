@@ -1,4 +1,4 @@
 from .Subscriber import Subscriber
-from .SubscriberConfig import SubscriberConfig
 from .SubscriberRecords import SubscriberRecords
+from .SubscriberSockets import SubscriberSockets
 from .Subscription import Subscription

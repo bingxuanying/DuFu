@@ -1,12 +1,16 @@
 from datetime import datetime
 import zmq
+
+from .SubscriberSockets import SubscriberSockets
+from .SubscriberRecords import SubscriberRecords
 from common import *
 
 
 class Subscriber:
-    socks = ClientSockets()
-    config = None
-    serializer = Serializer()
+    socks = None
+    node = None
+    zk_client = None
+    serializer = None
     records = None
     subscription = None
 
@@ -15,88 +19,95 @@ class Subscriber:
         # Let user type zipcodes they want to subscribe
         self.subscription = Subscription()
 
-        print("[SETUP] Initialize a subscriber instance ...")
-        # Init subscriber configuration
-        self.config = SubscriberConfig(isDebug)
+        print("[SETUP/PUB] Initialize the subscriber ...")
+        # Init publisher configuration
+        self.node = Node("subscriber")
+        
+        # Init sockets
+        self.socks = SubscriberSockets()
 
-        # Init socket SUB
-        print("[SETUP] Create SUB socket ...")
-        self.socks.setSub()
+        # Init publisher configuration
+        self.zk_client = ZKClient(self.node.role)
+
+        # Init serializer
+        self.serializer = Serializer()
 
         print("[SETUP] Begin recording incoming data ...")
         # Init data plot instance
-        self.records = SubscriberRecords(self.config.host)
-
-        print("[SETUP] Connect to Service Discovery Server ...")
-        # TODO: Establish connections
-        self.connect()
+        self.records = SubscriberRecords(self.node.host)
 
 
-    """
-    **Start running the current subscriber and listening to ports
-    """
+    # Check if the subscrber is startable
+    def startable(self):
+        print("[SETUP/PUB] Check if startable ...")
+
+        # Check if ZK Client is ready (error free)
+        # Check if config correctly
+        # Start if precheck doesn't raise any error
+        if self.zk_client.ready() and self.node.ready():
+            print("[SETUP/PUB] Establish connections ...")
+            self.connect()
+            self.run()
+
+
+    # Run subscrber instance to receive data
     def run(self):
-        print("[RUN] Build Success. Runs on: " + self.config.host)
-        print("[RUN] Start publishing messages ... ")
+        print("[RUN] Build Success. Runs on: " + self.node.host)
+        print("[RUN] Wait for incoming messages ... ")
 
         # Acquire sockets and poller
-        subSkt = self.socks.getSub()
-        poller = self.socks.getPoller()
+        sub_sock = self.socks.get_sub()
+        poller = self.socks.get_poller()
         
         # Main loop for receiving messages
         while True:
             try:
-                pollerSocks = dict(poller.poll(100))
-                if subSkt in pollerSocks and pollerSocks.get(subSkt) == zmq.POLLIN:
-                    message = subSkt.recv_string()
-                    transmissionTime = self.notify(message)
-                    self.records.add(transmissionTime)
+                poller_dict = dict(poller.poll(100))
+                if sub_sock in poller_dict and poller_dict.get(sub_sock) == zmq.POLLIN:
+                    message = sub_sock.recv_string()
+                    transmission_time = self.notify(message)
+                    self.records.add(transmission_time)
     
-            # User Exit
+            # User exits
             except KeyboardInterrupt:
-                print("[EXIT] Attempt to terminate ...")
                 self.exit()
                 break
 
 
-    """
-    **Terminate the current subscriber instance
-    """    
+    # Terminate the current subscriber instance
     def exit(self):
+        print("[EXIT] Terminate Subscriber ...")
+
         # Create data graph
-        self.records.createLinePlot()
-        # TODO: Notify and disconnect from service discovery server (ZooKeeper)
-        print("[EXIT] Subscriber is terminated.")
+        self.records.create_line_plot()
+
+        # Disconnect from service discovery server (ZooKeeper)
+        self.zk_client.exit()
+
+        print("[EXIT] Closed")
 
 
-    """
-    TODO: **Connect to service discovery server (ZooKeeper)
-    @param 
-    """    
+    # Connect to service discovery server (ZooKeeper)
     def connect(self):
-        subSkt = self.socks.getSub()
+        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
     
 
-    """
-    **Unpack and process the receiving message
-    @param message
-    @return transmissionTime: Time it takes to receve the message
-    """    
+    # Unpack and process the receiving message
+    # @param message
+    # @return transmission_time: Time it takes to receve the message
     def notify(self, message):
-        topic, body = self.serializer.JsonDemogrify(message)
+        # Deserialize messages
+        topic, body = self.serializer.json_demogrify(message)
+        print("topic: " + topic)
+        for k in body:
+            print(str(k) + ": " + str(body[k]))
 
-        if self.config.isDebug:
-            print("topic: " + topic)
-            for k in body:
-                print(str(k) + ": " + str(body[k]))
-
-        startTime = datetime.strptime(body["timestamp"], self.config.timeFormat)
-        endTime = datetime.now()
-        timeDiff = (endTime - startTime)
-        transmissionTime = timeDiff.total_seconds()
-
-        if self.config.isDebug:
-            print("Transmission time = ", transmissionTime)
-            print("")
+        # Calculate transmission time
+        start_time = datetime.strptime(body["timestamp"], self.node.time_format)
+        end_time = datetime.now()
+        time_diff = (end_time - start_time)
+        transmission_time = time_diff.total_seconds()
+        print("Transmission time = ", transmission_time)
+        print("")
         
-        return transmissionTime
+        return transmission_time

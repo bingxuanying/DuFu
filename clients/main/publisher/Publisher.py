@@ -1,17 +1,19 @@
 from random import randrange
 from datetime import datetime
+
 from .PublisherSockets import PublisherSockets
 from common import *
 
 
 class Publisher:
     socks = None
-    config = None
+    node = None
     zk_client = None
     serializer = None
 
     def __init__(self, debug_mode):
         print("[SETUP/PUB] Initialize the publisher ...")
+        
         # Init publisher configuration
         self.node = Node("publisher")
         
@@ -64,7 +66,11 @@ class Publisher:
     # Terminate publisher instance
     def exit(self):
         print("[EXIT] Terminate Publisher ...")
+
+        # Disconnect from service discovery server (ZooKeeper)
         self.zk_client.exit()
+        
+        print("[EXIT] Closed")
 
 
     # Connect to service discovery server (ZooKeeper)
