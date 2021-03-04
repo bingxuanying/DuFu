@@ -1,26 +1,28 @@
 import uuid
-import netifaces
 import sys
+import netifaces
 
 
-class ServerConfig:
+class Node:
     id = None
+    role = None
     host = None
-    debug_mode = False
+    time_format = None
 
-
-    def __init__(self, debug_mode:bool):
+    def __init__(self, role:str):
         # Set server id
         self.id = str(uuid.uuid4())
 
-        # Init debug mode
-        self.debug_mode = debug_mode
-        
+        # Config role as PUB/SUB
+        self.role = role
+
         # Init host address
         self._init_host_addr()
 
-
-    # Init host ip address
+        # Init time format
+        self.time_format = "%Y/%d/%m %H:%M:%S.%f"
+        
+    # Get current host ip address
     def _init_host_addr(self):
         name_lst = netifaces.interfaces()
         for name in name_lst:
@@ -29,9 +31,15 @@ class ServerConfig:
                     name)[netifaces.AF_INET][0]['addr']
                 break
     
+
+    # Check if ready
     def ready(self):
         if not self.id:
-            sys.exit("[ERR] NO valid server id.")
+            sys.exit("[ERR] No id is created")
+        elif not self.role:
+            sys.exit("[ERR] Role is not assigned")
+        elif not self.time_format:
+            sys.exit("[ERR] Time format is not assigned")
         elif not self.host:
             sys.exit("[ERR] NO valid host ip address.")
         

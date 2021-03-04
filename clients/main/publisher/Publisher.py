@@ -14,13 +14,13 @@ class Publisher:
     def __init__(self, debug_mode):
         print("[SETUP/PUB] Initialize the publisher ...")
         # Init publisher configuration
-        self.config = PublisherConfig(debug_mode)
+        self.node = Node("publisher")
         
         # Init sockets
-        self.socks = PublisherSockets(self.config.port)
+        self.socks = PublisherSockets()
 
         # Init publisher configuration
-        self.zk_client = ZKClient(self.config.role)
+        self.zk_client = ZKClient(self.node.role)
 
         # Init serializer
         self.serializer = Serializer()
@@ -33,7 +33,7 @@ class Publisher:
         # Check if ZK Client is ready (error free)
         # Check if config correctly
         # Start if precheck doesn't raise any error
-        if self.zk_client.ready() and self.config.ready():
+        if self.zk_client.ready() and self.node.ready():
             print("[SETUP/PUB] Establish connections ...")
             self.connect()
             self.run()
@@ -41,7 +41,7 @@ class Publisher:
 
     # Run publisher instance to produce data
     def run(self):
-        print("[RUN] Build Success. Runs on: " + self.config.host)
+        print("[RUN] Build Success. Runs on: " + self.node.host)
         print("[RUN] Start publishing messages ... ")
 
         while True:
@@ -51,7 +51,7 @@ class Publisher:
                 body = {
                     "temperature": randrange(-80, 135),
                     "relhumidity": randrange(10, 60),
-                    "timestamp": datetime.now().strftime(self.config.time_format)
+                    "timestamp": datetime.now().strftime(self.node.time_format)
                 }
                 # Send message
                 self.publish(zipcode, body)

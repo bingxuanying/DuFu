@@ -1,16 +1,37 @@
+import uuid
+import netifaces
+import sys
 from collections import defaultdict 
 from .ServerSockets import ServerSockets
 
 
 class Broker:
+    id = None
+    host = None
     socks = None
     subscription = defaultdict(int)
 
 
     def __init__(self):
+        # Set server id
+        self.id = str(uuid.uuid4())
+        
+        # Init host address
+        self._init_host_addr()
+
         # Start Sockets XPUB and XSUB
         print("[SETUP/BROKER] Init broker sever sockets ...")
         self.socks = ServerSockets()
+    
+
+    # Init host ip address
+    def _init_host_addr(self):
+        name_lst = netifaces.interfaces()
+        for name in name_lst:
+            if len(name) > 4 and name[len(name)-4:] == "eth0":
+                self.host = netifaces.ifaddresses(
+                    name)[netifaces.AF_INET][0]['addr']
+                break
     
 
     # Run the broker instance
@@ -29,19 +50,10 @@ class Broker:
             try:
                 socks = dict(poller.poll(1000))
 
-                # !! if self.isDebug:
-                    # print ("Events received = {}".format (socks))
-
                 # From publishers
                 if xsub_sock in socks:
                     message = xsub_sock.recv_string()
                     print(message)
-                    # !! topic, message = self.utils.demogrify(message)
-
-                    # !! if self.isDebug:
-                        # print("topic: " + topic)
-                        # for key in message:
-                        #     print(str(key) + ": " + str(message[key]))
 
                     xpub_sock.send_string(message)
 
@@ -55,6 +67,16 @@ class Broker:
         print("[EXIT] Terminate broker ...")
         raise KeyboardInterrupt
     
+
+    # Check if ready
+    def ready(self):
+        if not self.id:
+            sys.exit("[ERR] NO valid server id.")
+        elif not self.host:
+            sys.exit("[ERR] NO valid host ip address.")
+        
+        return True
+
 
     # Subscribe topics with publishers
     # @return topic
