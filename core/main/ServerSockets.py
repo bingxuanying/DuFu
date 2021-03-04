@@ -56,6 +56,7 @@ class ServerSockets:
         self.socks["xpub"] = self.ctx.socket(zmq.XPUB)
         self.socks["xpub"].setsockopt(zmq.XPUB_VERBOSE, 1)
         self.socks["xpub"].bind("tcp://*:{0}".format(self.port["xpub"]))
+        self.poller.register(self.socks["xpub"], zmq.POLLIN)
 
 
     def get_xsub(self):

@@ -3,6 +3,7 @@ import zmq
 
 from .SubscriberSockets import SubscriberSockets
 from .SubscriberRecords import SubscriberRecords
+from .Subscription import Subscription
 from common import *
 
 
@@ -19,7 +20,7 @@ class Subscriber:
         # Let user type zipcodes they want to subscribe
         self.subscription = Subscription()
 
-        print("[SETUP/PUB] Initialize the subscriber ...")
+        print("[SETUP/SUB] Initialize the subscriber ...")
         # Init publisher configuration
         self.node = Node("subscriber")
         
@@ -32,20 +33,19 @@ class Subscriber:
         # Init serializer
         self.serializer = Serializer()
 
-        print("[SETUP] Begin recording incoming data ...")
         # Init data plot instance
         self.records = SubscriberRecords(self.node.host)
 
 
     # Check if the subscrber is startable
     def startable(self):
-        print("[SETUP/PUB] Check if startable ...")
+        print("[SETUP/SUB] Check if startable ...")
 
         # Check if ZK Client is ready (error free)
         # Check if config correctly
         # Start if precheck doesn't raise any error
         if self.zk_client.ready() and self.node.ready():
-            print("[SETUP/PUB] Establish connections ...")
+            print("[SETUP/SUB] Establish connections ...")
             self.connect()
             self.run()
 
@@ -55,6 +55,9 @@ class Subscriber:
         print("[RUN] Build Success. Runs on: " + self.node.host)
         print("[RUN] Wait for incoming messages ... ")
 
+        # Subscribe topics
+        self.socks.subscribe(self.subscription.topics)
+
         # Acquire sockets and poller
         sub_sock = self.socks.get_sub()
         poller = self.socks.get_poller()
@@ -62,8 +65,8 @@ class Subscriber:
         # Main loop for receiving messages
         while True:
             try:
-                poller_dict = dict(poller.poll(100))
-                if sub_sock in poller_dict and poller_dict.get(sub_sock) == zmq.POLLIN:
+                events = dict(poller.poll(100))
+                if sub_sock in events and events.get(sub_sock) == zmq.POLLIN:
                     message = sub_sock.recv_string()
                     transmission_time = self.notify(message)
                     self.records.add(transmission_time)

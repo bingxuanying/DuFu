@@ -43,15 +43,19 @@ class Broker:
         xpub_sock = self.socks.get_xpub()
         poller = self.socks.get_poller()
 
-        # TODO: subscribe with publishers
+        # TODO: Subscribe with publishers
         self.xSubscribe("")
 
         while True:
             try:
-                socks = dict(poller.poll(1000))
+                events = dict(poller.poll(1000))
+                # From subscribers
+                if xpub_sock in events:
+                    message = xsub_sock.recv()
+                    print(message)
 
                 # From publishers
-                if xsub_sock in socks:
+                if xsub_sock in events:
                     message = xsub_sock.recv_string()
                     print(message)
 
@@ -85,4 +89,4 @@ class Broker:
         zipcode = topic.encode("utf-8")
         message = b'\x01' + bytearray(zipcode)
         xsub_sock.send(message)
-        print("subscribed: " + topic)
+        # print("subscribed: " + topic)

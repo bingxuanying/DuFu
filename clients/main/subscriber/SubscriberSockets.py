@@ -29,6 +29,11 @@ class SubscriberSockets(ClientSockets):
         return self.poller
     
 
+    def subscribe(self, topics):
+        for topic in topics:
+            self.socks["sub"].subscribe(topic)
+
+
     def connect(self, leader_broker_url):
         self.socks["sub"].connect(leader_broker_url)
 
