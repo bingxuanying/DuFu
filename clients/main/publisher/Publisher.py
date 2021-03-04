@@ -1,7 +1,6 @@
 from random import randrange
 from datetime import datetime
 from .PublisherSockets import PublisherSockets
-from .PublisherConfig import PublisherConfig
 from common import *
 
 
@@ -78,9 +77,5 @@ class Publisher:
     def publish(self, topic, body):
         pub_sock = self.socks.get_pub()
         msg = self.serializer.json_mogrify(topic, body)
-
-        # Debug Mode
-        if self.config.debug_mode:
-            print(msg)
-
         pub_sock.send_string(msg)
+        print(msg)
