@@ -26,8 +26,8 @@ class PublisherConfig(ClientConfig):
     # Locate config file
     def _get_config_file_addr(self):
         current_dir = path.dirname(path.realpath(__file__))
-        parent_dir = path.dirname(current_dir)
-        self.config_file_dir = path.join(path.dirname(parent_dir), 'config', 'publisher.config')
+        parent_dir = path.dirname(path.dirname(path.dirname(current_dir)))
+        self.config_file_dir = path.join(parent_dir, 'config', 'publisher.config')
 
 
     # Get the subset of properties relevant to broker server and zookeeper
@@ -35,15 +35,15 @@ class PublisherConfig(ClientConfig):
         # Copy the subset of properties
         props = ConfigParser()
         props.read(self.config_file_dir)
-        self.port["pub"] = props["publisher"]["port.pub"]
+        self.port["pub"] = props["port"]["pub"]
 
 
     def ready(self):
         if not self.port:
-            sys.exit("NO valid port to set up socket.")
+            sys.exit("[ERR] NO valid port to set up socket.")
         elif "pub" not in self.port:
-            sys.exit("NO valid pub port to set up socket.")
+            sys.exit("[ERR] NO valid pub port to set up socket.")
         elif not self.host:
-            sys.exit("NO valid host ip address.")
+            sys.exit("[ERR] NO valid host ip address.")
         
         return True

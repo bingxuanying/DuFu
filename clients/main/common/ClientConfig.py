@@ -19,7 +19,7 @@ class ClientConfig:
         self._init_host_addr()
 
         # Init time format
-        time_format = "%Y/%d/%m %H:%M:%S.%f"
+        self.time_format = "%Y/%d/%m %H:%M:%S.%f"
         
     # Get current host ip address
     def _init_host_addr(self):

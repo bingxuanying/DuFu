@@ -31,8 +31,8 @@ class ServerConfig:
     
     def ready(self):
         if not self.id:
-            sys.exit("NO valid server id.")
+            sys.exit("[ERR] NO valid server id.")
         elif not self.host:
-            sys.exit("NO valid host ip address.")
+            sys.exit("[ERR] NO valid host ip address.")
         
         return True

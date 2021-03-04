@@ -1,5 +1,4 @@
 from collections import defaultdict 
-
 from .ServerSockets import ServerSockets
 
 
@@ -14,9 +13,7 @@ class Broker:
         self.socks = ServerSockets()
     
 
-    """
-    **Start running the current broker
-    """
+    # Run the broker instance
     def run(self):
         print ("[RUN] Runing ...")
 
@@ -26,7 +23,7 @@ class Broker:
         poller = self.socks.get_poller()
 
         # TODO: subscribe with publishers
-        # !! self.xSubscribe("", xsub)
+        self.xSubscribe("")
 
         while True:
             try:
@@ -38,6 +35,7 @@ class Broker:
                 # From publishers
                 if xsub_sock in socks:
                     message = xsub_sock.recv_string()
+                    print(message)
                     # !! topic, message = self.utils.demogrify(message)
 
                     # !! if self.isDebug:
@@ -51,22 +49,18 @@ class Broker:
                 self.exit()
     
 
-    """
-    **Terminate the current broker
-    """
+    # Terminate the  broker
     def exit(self):
         # TODO: Unsubscriber from publishers
         print("[EXIT] Terminate broker ...")
         raise KeyboardInterrupt
     
 
-    # """
-    # ** Subscribe topics with publishers
+    # Subscribe topics with publishers
     # @return topic
-    # """
-    # def xSubscribe(self, topic, xsub):
-    #     zipcode = topic.encode("utf-8")
-    #     message = b'\x01' + bytearray(zipcode)
-    #     xsub.send(message)
-    #     if self.isDebug:
-    #         print("subscribed: " + topic)
+    def xSubscribe(self, topic):
+        xsub_sock = self.socks.get_xsub()
+        zipcode = topic.encode("utf-8")
+        message = b'\x01' + bytearray(zipcode)
+        xsub_sock.send(message)
+        print("subscribed: " + topic)

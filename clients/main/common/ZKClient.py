@@ -1,9 +1,8 @@
 from kazoo.client import KazooClient
+from configparser import ConfigParser
 import uuid
 from os import path
-from configparser import ConfigParser
 import sys
-
 
 class ZKClient:
     zk = None
@@ -39,19 +38,19 @@ class ZKClient:
         props.read(self.config_file_dir)
         self.broker_server_default_port = props["broker_server"]["port"]
         self.zookeeper_connection_url = props["service_discovery"]["connection.url"]
-        self.zookeeper_connection_timeout = props["service_discovery"]["connection.timeout.s"]
+        self.zookeeper_connection_timeout = int(props["service_discovery"]["connection.timeout.s"])
 
 
     # Called when first start
-    def startup(self, socks_connect:function, socks_disconnect:function):
-        print("[SETUP/ZK]Connect to zookeeper ...")
+    def startup(self, socks_connect, socks_disconnect):
+        print("[SETUP/ZK] Connect to zookeeper ...")
         self.zk.start(timeout=self.zookeeper_connection_timeout)
         self.find_leader_broker(socks_connect, socks_disconnect)
 
 
     # Find the leader broker to connect
-    def find_leader_broker(self, socks_connect:function, socks_disconnect:function):
-        print("[SETUP/ZK]Find leader broker ...")
+    def find_leader_broker(self, socks_connect, socks_disconnect):
+        print("[SETUP/ZK] Find leader broker ...")
         # Reconnect if disconnected
         if not self.zk.connected:
             self.zk.start(timeout=self.zookeeper_connection_timeout)
@@ -62,7 +61,7 @@ class ZKClient:
 
         # If no leader exists, raise error
         if not leader_queue:
-            sys.exit("No active brokers.")
+            sys.exit("[ERR] No active brokers.")
         
         # Identiy the leader broker node
         leader_node = leader_queue[0]
@@ -71,7 +70,7 @@ class ZKClient:
         # Read the leader broker connection url
         data, _ = self.zk.get(self.leader_broker_node_path)
         leader_host = data.decode("utf-8")
-        self.leader_broker_url = leader_host + ":" + self.broker_server_default_port
+        self.leader_broker_url = "tcp://" + leader_host + ":" + self.broker_server_default_port
 
         # Connect to leader broker
         socks_connect(self.leader_broker_url)
@@ -80,11 +79,11 @@ class ZKClient:
         self.watch(socks_connect, socks_disconnect)
 
     # Watch on the leader node, find new leader if the current leader suicides
-    def watch(self, socks_connect:function, socks_disconnect:function):
+    def watch(self, socks_connect, socks_disconnect):
         @self.zk.DataWatch(self.leader_broker_node_path)
         def my_func(data, stat, event):
             if stat:
-                print("[SETUP/ZK]Start watching on leader node")
+                print("[SETUP/ZK] Start watching on leader node")
             else:
                 socks_disconnect(self.leader_broker_url)
                 self.find_leader_broker(socks_connect, socks_disconnect)
@@ -93,13 +92,13 @@ class ZKClient:
     # Check if props are ready and error free
     def ready(self):
         if not self.config_file_dir:
-            sys.exit("Doesn't find the config file.")
+            sys.exit("[ERR] Doesn't find the config file.")
         elif not self.broker_server_default_port:
-            sys.exit("Broker server default port is not given.")
+            sys.exit("[ERR] Broker server default port is not given.")
         elif not self.zookeeper_connection_url:
-            sys.exit("Zookeeper server url is EMPTY.")
+            sys.exit("[ERR] Zookeeper server url is EMPTY.")
         elif not self.zk:
-            sys.exit("Zookeeper instance instantiation FAILED.")
+            sys.exit("[ERR] Zookeeper instance instantiation FAILED.")
     
         return True
 

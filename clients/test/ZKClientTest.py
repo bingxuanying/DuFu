@@ -1,21 +1,21 @@
-import os
+from os import path
 import sys
-currentdir = os.path.dirname(os.path.realpath(__file__))
-parentdir = os.path.dirname(currentdir)
-sys.path.append(parentdir)
+currentdir = path.dirname(path.realpath(__file__))
+parentdir = path.dirname(currentdir)
+sys.path.append(path.join(parentdir, "main"))
 
 from time import sleep
-from main.common.ZKClient import ZKClient
+from common.ZKClient import ZKClient
 
 
 if __name__ == "__main__":
     zk_utils = ZKClient()
 
     if zk_utils.ready():
-        zk_utils.startup()
-        while 1:
-            try:
+        try:
+            zk_utils.startup()
+            while 1:
                 sleep(2)
                 print(".")
-            except KeyboardInterrupt:
-                break
+        except KeyboardInterrupt:
+            zk_utils.exit()

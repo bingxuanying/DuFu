@@ -68,10 +68,10 @@ class ZookeeperLeaderElector:
 
     def ready(self):
         if not self.config_file_dir:
-            sys.exit("Doesn't find the config file.")
+            sys.exit("[ERR] Doesn't find the config file.")
         elif not self.zookeeper_connection_url:
-            sys.exit("Zookeeper server url is EMPTY.")
+            sys.exit("[ERR] Zookeeper server url is EMPTY.")
         elif not self.zk:
-            sys.exit("Zookeeper instance instantiation FAILED.")
+            sys.exit("[ERR] Zookeeper instance instantiation FAILED.")
         
         return True

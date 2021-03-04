@@ -13,21 +13,17 @@ class Publisher:
 
     def __init__(self, debug_mode):
         print("[SETUP/PUB] Initialize the publisher ...")
-        # Init sockets
-        self.socks = PublisherSockets()
-
         # Init publisher configuration
         self.config = PublisherConfig(debug_mode)
         
+        # Init sockets
+        self.socks = PublisherSockets(self.config.port)
+
         # Init publisher configuration
         self.zk_client = ZKClient(self.config.role)
 
         # Init serializer
-        serializer = Serializer()
-
-        print("[SETUP/PUB] Establish connections ...")
-        # TODO: Establish connections
-        self.connect()
+        self.serializer = Serializer()
 
 
     # Check if the publisher is startable
@@ -38,6 +34,7 @@ class Publisher:
         # Check if config correctly
         # Start if precheck doesn't raise any error
         if self.zk_client.ready() and self.config.ready():
+            print("[SETUP/PUB] Establish connections ...")
             self.connect()
             self.run()
 
@@ -54,19 +51,14 @@ class Publisher:
                 body = {
                     "temperature": randrange(-80, 135),
                     "relhumidity": randrange(10, 60),
-                    "timestamp": datetime.now().strftime(self.config.timeFormat)
+                    "timestamp": datetime.now().strftime(self.config.time_format)
                 }
                 # Send message
                 self.publish(zipcode, body)
-                print(zipcode)
-                print(body)
-                print('')
 
             # User exits
             except KeyboardInterrupt:
                 self.exit()
-
-            finally:
                 break
 
 
@@ -84,11 +76,11 @@ class Publisher:
     # Publish messages
     # @param topic + message in Json format
     def publish(self, topic, body):
-        pubSkt = self.socks.getPub()
-        msg = self.serializer.JsonMogrify(topic, body)
+        pub_sock = self.socks.get_pub()
+        msg = self.serializer.json_mogrify(topic, body)
 
         # Debug Mode
-        if self.config.isDebug:
+        if self.config.debug_mode:
             print(msg)
 
-        pubSkt.send_string(msg)
+        pub_sock.send_string(msg)
