@@ -3,10 +3,10 @@ import netifaces
 
 
 class ClientConfig:
-    debug_mode = False
+    debug_mode = None
     role = None
     host = None
-    time_format = "%Y/%d/%m %H:%M:%S.%f"
+    time_format = None
 
     def __init__(self, role:str, debug_mode:bool=False):
         # Init debug mode
@@ -17,6 +17,9 @@ class ClientConfig:
 
         # Init host address
         self._init_host_addr()
+
+        # Init time format
+        time_format = "%Y/%d/%m %H:%M:%S.%f"
         
     # Get current host ip address
     def _init_host_addr(self):
@@ -26,6 +29,3 @@ class ClientConfig:
                 self.host = netifaces.ifaddresses(
                     name)[netifaces.AF_INET][0]['addr']
                 break
-        
-        if not self.host:
-            sys.exit("Setting up client host ERROR")

@@ -8,24 +8,41 @@ from common import *
 class Publisher:
     socks = None
     config = None
-    serializer = Serializer()
+    zk_client = None
+    serializer = None
 
     def __init__(self, debug_mode):
-        print("[SETUP] Initialize a publisher instance ...")
+        print("[SETUP/PUB] Initialize the publisher ...")
         # Init sockets
         self.socks = PublisherSockets()
 
         # Init publisher configuration
         self.config = PublisherConfig(debug_mode)
+        
+        # Init publisher configuration
+        self.zk_client = ZKClient(self.config.role)
 
-        print("[SETUP] Connect to Service Discovery Server ...")
+        # Init serializer
+        serializer = Serializer()
+
+        print("[SETUP/PUB] Establish connections ...")
         # TODO: Establish connections
         self.connect()
 
 
-    """
-    **Start running the current subscriber and listening to ports
-    """
+    # Check if the publisher is startable
+    def startable(self):
+        print("[SETUP/PUB] Check if startable ...")
+
+        # Check if ZK Client is ready (error free)
+        # Check if config correctly
+        # Start if precheck doesn't raise any error
+        if self.zk_client.ready() and self.config.ready():
+            self.connect()
+            self.run()
+
+
+    # Run publisher instance to produce data
     def run(self):
         print("[RUN] Build Success. Runs on: " + self.config.host)
         print("[RUN] Start publishing messages ... ")
@@ -41,43 +58,31 @@ class Publisher:
                 }
                 # Send message
                 self.publish(zipcode, body)
+                print(zipcode)
+                print(body)
+                print('')
 
-            # User Exit
+            # User exits
             except KeyboardInterrupt:
-                print("[EXIT] Attemptting to terminate ...")
                 self.exit()
+
+            finally:
                 break
 
 
-    """
-    **Terminate the current publisher instance
-    """    
+    # Terminate publisher instance
     def exit(self):
-        # TODO: Notify and disconnect from service discovery server (ZooKeeper)
-        print("[EXIT] Publisher is terminated.")
+        print("[EXIT] Terminate Publisher ...")
+        self.zk_client.exit()
 
 
-    """
-    TODO: **Connect to service discovery server (ZooKeeper)
-    """
+    # Connect to service discovery server (ZooKeeper)
     def connect(self):
-        pubSkt = self.socks.getPub()
-        # # Connect to Broker
-        # if self.config.ifBroker:
-        #     addr = "tcp://{0}:{1}".format(brokerHost, port)
-        #     print("[SETUP] Connecting o Broker at {0} ...".format(addr))
-        #     pubSkt.connect(addr)
-        # # Bind to all hosts
-        # else:
-        #     print("[SETUP] Binding to all hosts ...")
-        #     pubSkt.bind(
-        #         "tcp://*:{0}".format(self.utils.getPort("pub")))
+        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
     
 
-    """
-    **Publish messages
-    @param topic + message in Json format
-    """
+    # Publish messages
+    # @param topic + message in Json format
     def publish(self, topic, body):
         pubSkt = self.socks.getPub()
         msg = self.serializer.JsonMogrify(topic, body)

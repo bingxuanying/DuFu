@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 import uuid
 from os import path
+import sys
 from common import *
 
 class PublisherConfig(ClientConfig):
@@ -13,7 +14,7 @@ class PublisherConfig(ClientConfig):
         self.id = str(uuid.uuid4())
 
         # Extened ClientConfig
-        ClientConfig.__init__(self, "pub", debug_mode)
+        ClientConfig.__init__(self, "publisher", debug_mode)
 
         # Get config file
         self._get_config_file_addr()
@@ -35,3 +36,14 @@ class PublisherConfig(ClientConfig):
         props = ConfigParser()
         props.read(self.config_file_dir)
         self.port["pub"] = props["publisher"]["port.pub"]
+
+
+    def ready(self):
+        if not self.port:
+            sys.exit("NO valid port to set up socket.")
+        elif "pub" not in self.port:
+            sys.exit("NO valid pub port to set up socket.")
+        elif not self.host:
+            sys.exit("NO valid host ip address.")
+        
+        return True

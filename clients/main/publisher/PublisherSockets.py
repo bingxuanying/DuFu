@@ -46,6 +46,11 @@ class PublisherSockets(ClientSockets):
     def get_poller(self):
         return self.poller
     
-    
+    def connect(self, leader_broker_url):
+        self.socks["pub"].connect(leader_broker_url)
+
+    def disconnect(self, leader_broker_url):
+        self.socks["pub"].disconnect(leader_broker_url)
+
     def close(self):
         self.ctx.destroy();
