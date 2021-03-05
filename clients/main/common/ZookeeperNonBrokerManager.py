@@ -67,7 +67,7 @@ class ZookeeperNonBrokerManager:
             # Create a node with data
             node = "node" + node_id
             path = self.default_node_path + '/' + node
-            self.zk.create_async(path, bytes(host_ip, 'utf-8'), ephemeral=True)
+            self.zk.create_async(path, bytes(host_ip, "utf-8"), ephemeral=True)
         
         # Exit
         except KeyboardInterrupt:
@@ -92,13 +92,6 @@ class ZookeeperNonBrokerManager:
             # Ensure a path, create if necessary
             self.zk.ensure_path(self.default_node_path)
 
-            # Get publisher server url list
-            updated_publisher_server_url_lst = self.zk.get_children(self.default_node_path)
-            if not self.publisher_server_url_lst:
-                self.publisher_server_url_lst = updated_publisher_server_url_lst
-            
-            print(updated_publisher_server_url_lst)
-
             self.watch()
         
         # Exit
@@ -114,11 +107,23 @@ class ZookeeperNonBrokerManager:
     # Watch on the leader node, find new leader if the current leader suicides
     def watch(self):
         @self.zk.ChildrenWatch(self.default_node_path)
-        def my_func(a, b, c):
-            print("[SETUP/ZK] Start watching on leader node")
-            print("a = ", a)
-            print("b = ", b)
-            print("c = ", c)
+        def my_func(updated_publisher_server_url_lst):
+            if sorted(updated_publisher_server_url_lst) != sorted(self.publisher_server_url_lst):                
+                # Find publishers to disconeect
+                deleted_publisher_servers = [node for node in self.publisher_server_url_lst if node not in updated_publisher_server_url_lst]
+                
+                # Find newly join publishers to connect
+                new_publisher_servers = [node for node in updated_publisher_server_url_lst if node not in self.publisher_server_url_lst]
+
+                # Update local publisher_server_url_lst
+                self.publisher_server_url_lst = updated_publisher_server_url_lst
+
+                print(deleted_publisher_servers)
+                print(new_publisher_servers)
+
+                self.watch()
+            else:
+                print("[SETUP/ZK] Start watching on leader node")
 
 
     def ready(self):
