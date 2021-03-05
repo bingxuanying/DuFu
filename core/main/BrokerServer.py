@@ -1,5 +1,5 @@
-from .ZookeeperLeaderElector import ZookeeperLeaderElector
-from .Broker import Broker
+from ZookeeperLeaderElector import ZookeeperLeaderElector
+from Broker import Broker
 
 
 class BrokerServer:

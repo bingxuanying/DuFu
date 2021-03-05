@@ -2,7 +2,7 @@ import uuid
 import netifaces
 import sys
 from collections import defaultdict 
-from .ServerSockets import ServerSockets
+from ServerSockets import ServerSockets
 
 
 class Broker:
