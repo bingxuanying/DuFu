@@ -10,11 +10,15 @@ class Broker:
     host = None
     socks = None
     subscription = defaultdict(int)
+    show_data = None
 
 
-    def __init__(self):
+    def __init__(self, show_data:bool=False):
         # Set server id
         self.id = str(uuid.uuid4())
+
+        # Check if show message when tranfer
+        self.show_data = show_data
         
         # Init host address
         self._init_host_addr()
@@ -43,7 +47,7 @@ class Broker:
         xpub_sock = self.socks.get_xpub()
         poller = self.socks.get_poller()
 
-        # TODO: Subscribe with publishers
+        # Subscribe with publishers
         self.xSubscribe("")
 
         while True:
@@ -52,12 +56,14 @@ class Broker:
                 # From subscribers
                 if xpub_sock in events:
                     message = xsub_sock.recv()
-                    print(message)
+                    if self.show_data:
+                        print(message)
 
                 # From publishers
                 if xsub_sock in events:
                     message = xsub_sock.recv_string()
-                    print(message)
+                    if self.show_data:
+                        print(message)
 
                     xpub_sock.send_string(message)
 
@@ -67,7 +73,6 @@ class Broker:
 
     # Terminate the  broker
     def exit(self):
-        # TODO: Unsubscriber from publishers
         print("[EXIT] Terminate broker ...")
         raise KeyboardInterrupt
     

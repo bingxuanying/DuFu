@@ -1,10 +1,6 @@
-from os.path import dirname, realpath
+from os import path
 import sys
-root = dirname((realpath(__file__)))
+rootdir = path.dirname((path.realpath(__file__)))
 
-sys.path.append(root + "/clients/main")
-sys.path.append(root + "/clients/main/common")
-sys.path.append(root + "/clients/main/publisher")
-sys.path.append(root + "/clients/main/subscriber")
-
-sys.path.append(root + "/core/main")
+sys.path.append(path.join(rootdir, "clients", "main"))
+sys.path.append(path.join(rootdir, "core", "main"))

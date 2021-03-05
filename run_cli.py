@@ -1,9 +1,9 @@
 import pathex
 import logging
 
-from Broker import Broker
-from Publisher import Publisher
-from Subscriber import Subscriber
+from BrokerServer import BrokerServer
+from publisher.Publisher import Publisher
+from subscriber.Subscriber import Subscriber
 
 
 def main():
@@ -11,32 +11,35 @@ def main():
         # Logging config
         logging.basicConfig(filename='myapp.log', level=logging.INFO)
 
-        # Ask users if want to enter debug mode to print our all messages
-        isDebug = input("Enter debug mode so messages will be printed (y/n)? ")
-        ansSet = {'y', 'n'}
-        while isDebug not in ansSet:
-            isDebug = input("Please answer as y or n: ")
-        # Convert to boolean
-        isDebug = True if isDebug == 'y' else False
-
         # Ask users what instance to create
-        instance = input("Create a Broker, Publisher, or Subscriber (broker/pub/sub)? ")
-        ansSet = {'broker', 'pub', 'sub'}
-        while instance not in ansSet:
-            instance = input("Please answer as broker, pub, or sub: ")
+        name = input("Create a Broker, Publisher, or Subscriber (broker/pub/sub)? ")
+        ans_set = {'broker', 'pub', 'sub'}
+        while name not in ans_set:
+            name = input("Please answer: broker, pub, or sub: ")
+
+        # Ask users if want to enter debug mode to print our all messages
+        show_data = input("Do you want to see transfered data being printed on console (y/n)? ")
+        ans_set = {'y', 'n'}
+        while show_data not in ans_set:
+            show_data = input("Please answer: y or n: ")
+
+        # Convert to boolean
+        show_data = True if show_data == 'y' else False
         
         # Create corresponding instance and call run()
-        if instance == "broker":
-            client = Broker(isDebug)
-        elif instance == "pub":
-            client = Publisher(isDebug)
-        elif instance == "sub":
-            client = Subscriber(isDebug)
-        client.run()
+        if name == "broker":
+            instance = BrokerServer(show_data)
+        elif name == "pub":
+            instance = Publisher(show_data)
+        elif name == "sub":
+            instance = Subscriber(show_data)
+        
+        # Start instance
+        instance.startable()
 
     # On exit
     except KeyboardInterrupt:
-        print("Exit Success")
+        print("Stop creating")
         
 
 if __name__ == "__main__":

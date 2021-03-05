@@ -7,12 +7,12 @@ class BrokerServer:
     broker = None
 
 
-    def __init__(self, debug_mode=False):
+    def __init__(self, show_data:bool=False):
         # Init zookeeper utils
         self.zk_utils = ZookeeperLeaderElector()
         
         # Init broker instance
-        self.broker = Broker()
+        self.broker = Broker(show_data)
     
 
     # Check if the broker server is startable
