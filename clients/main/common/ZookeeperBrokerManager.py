@@ -1,11 +1,11 @@
 from kazoo.client import KazooClient
 from configparser import ConfigParser
-import uuid
 from os import path
 import sys
 
-class ZKClient:
+class ZookeeperBrokerManager:
     zk = None
+    default_node_path = None
     config_file_dir = None
     zookeeper_connection_url = None
     zookeeper_connection_timeout = None
@@ -14,6 +14,9 @@ class ZKClient:
     leader_broker_url = None
 
     def __init__(self, role):
+        # Default zookeeper node path to CRUD
+        self.default_node_path = "/cluster"
+
         # Get config file
         self._get_config_file_addr(role)
 
@@ -56,7 +59,7 @@ class ZKClient:
             self.zk.start(timeout=self.zookeeper_connection_timeout)
 
         # Find the leader broker queue
-        election = self.zk.Election("/cluster")
+        election = self.zk.Election(self.default_node_path)
         leader_queue = election.contenders()
 
         # If no leader exists, raise error
@@ -65,7 +68,7 @@ class ZKClient:
         
         # Identiy the leader broker node
         leader_node = leader_queue[0]
-        self.leader_broker_node_path = "/cluster/" + leader_node
+        self.leader_broker_node_path = self.default_node_path + '/' + leader_node
 
         # Read the leader broker connection url
         data, _ = self.zk.get(self.leader_broker_node_path)
@@ -77,6 +80,7 @@ class ZKClient:
 
         # Watch on the leader node in case it dies
         self.watch(socks_connect, socks_disconnect)
+
 
     # Watch on the leader node, find new leader if the current leader suicides
     def watch(self, socks_connect, socks_disconnect):

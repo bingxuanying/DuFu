@@ -11,8 +11,9 @@ class Publisher:
     zk_client = None
     serializer = None
     show_data = None
+    broker_mode = None
 
-    def __init__(self, show_data:bool=False):
+    def __init__(self, show_data:bool=False, broker_mode:bool=True):
         print("[SETUP/PUB] Initialize the publisher ...")
 
         # Check if show message when tranfer
@@ -25,7 +26,7 @@ class Publisher:
         self.socks = PublisherSockets()
 
         # Init publisher configuration
-        self.zk_client = ZKClient(self.node.role)
+        self.zk_client = ZookeeperBrokerManager(self.node.role)
 
         # Init serializer
         self.serializer = Serializer()
@@ -42,6 +43,11 @@ class Publisher:
             print("[SETUP/PUB] Establish connections ...")
             self.connect()
             self.run()
+
+
+    # Connect to service discovery server (ZooKeeper)
+    def connect(self):
+        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
 
 
     # Run publisher instance to produce data
@@ -75,11 +81,6 @@ class Publisher:
         self.zk_client.exit()
 
         print("[EXIT] Closed")
-
-
-    # Connect to service discovery server (ZooKeeper)
-    def connect(self):
-        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
     
 
     # Publish messages

@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-s", "--show", 
                             help="console log data being received or sent", 
-                            dest="show", action="store_true", default=False)
+                            dest="show_data", action="store_true", default=False)
 
     parser.add_argument("--broker", 
                             help="create # numnber of brokers", 

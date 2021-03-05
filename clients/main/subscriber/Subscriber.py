@@ -16,7 +16,7 @@ class Subscriber:
     subscription = None
     show_data = None
 
-    def __init__(self, show_data:bool=False):
+    def __init__(self, show_data:bool=False, broker_mode:bool=True):
         print("[PRE] Subscribe to topics ...")
 
         # Let user type zipcodes they want to subscribe
@@ -27,14 +27,14 @@ class Subscriber:
 
         print("[SETUP/SUB] Initialize the subscriber ...")
 
-        # Init publisher configuration
+        # Init subscriber configuration
         self.node = Node("subscriber")
         
         # Init sockets
         self.socks = SubscriberSockets()
 
-        # Init publisher configuration
-        self.zk_client = ZKClient(self.node.role)
+        # Init subscriber configuration
+        self.zk_client = ZookeeperBrokerManager(self.node.role)
 
         # Init serializer
         self.serializer = Serializer()
@@ -54,6 +54,11 @@ class Subscriber:
             print("[SETUP/SUB] Establish connections ...")
             self.connect()
             self.run()
+
+
+    # Connect to service discovery server (ZooKeeper)
+    def connect(self):
+        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
 
 
     # Run subscrber instance to receive data
@@ -94,11 +99,6 @@ class Subscriber:
         self.zk_client.exit()
 
         print("[EXIT] Closed")
-
-
-    # Connect to service discovery server (ZooKeeper)
-    def connect(self):
-        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
     
 
     # Unpack and process the receiving message

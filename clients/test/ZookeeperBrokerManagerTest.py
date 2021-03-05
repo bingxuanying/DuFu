@@ -5,11 +5,11 @@ parentdir = path.dirname(currentdir)
 sys.path.append(path.join(parentdir, "main"))
 
 from time import sleep
-from common.ZKClient import ZKClient
+from common.ZookeeperBrokerManager import ZookeeperBrokerManager
 
 
 if __name__ == "__main__":
-    zk_utils = ZKClient()
+    zk_utils = ZookeeperBrokerManager()
 
     if zk_utils.ready():
         try:

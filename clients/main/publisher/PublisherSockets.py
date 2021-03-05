@@ -54,6 +54,12 @@ class PublisherSockets(ClientSockets):
 
     def get_poller(self):
         return self.poller
+
+
+    def bind(self):
+        url_to_bind = "tcp://*:" + self.port["pub"]
+        print(url_to_bind)
+        self.socks["pub"].bind(url_to_bind)
     
 
     def connect(self, leader_broker_url):

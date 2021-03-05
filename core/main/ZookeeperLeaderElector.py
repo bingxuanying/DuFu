@@ -5,11 +5,15 @@ import sys
 
 class ZookeeperLeaderElector:
     zk = None
+    default_node_path = None
     zookeeper_connection_url = None
     config_file_dir = None
 
 
     def __init__(self):
+        # Default zookeeper node path to CRUD
+        self.default_node_path = "/cluster"
+
         # Locate config file
         self._get_config_file_addr()
 
@@ -40,16 +44,16 @@ class ZookeeperLeaderElector:
 
         try:
             # Ensure a path, create if necessary
-            self.zk.ensure_path("/cluster")
+            self.zk.ensure_path(self.default_node_path)
 
             # Create a node with data
             node = "node" + server_id
-            path = "/cluster/" + node
+            path = self.default_node_path + '/' + node
             self.zk.create_async(path, bytes(host_ip, 'utf-8'), ephemeral=True)
 
             # Elect for leadership
             print("[SETUP/ZK] Elect for leadership ...")
-            election = self.zk.Election("/cluster", node)
+            election = self.zk.Election(self.default_node_path, node)
             election.run(broker_server_start)
         
         # Exit
