@@ -66,8 +66,8 @@ class ZookeeperNonBrokerManager:
 
             # Create a node with data
             node = "node" + node_id
-            path = self.default_node_path + '/' + node
-            self.zk.create_async(path, bytes(host_ip, "utf-8"), ephemeral=True)
+            node_path = self.default_node_path + '/' + node
+            self.zk.create_async(node_path, bytes(host_ip, "utf-8"), ephemeral=True)
         
         # Exit
         except KeyboardInterrupt:
@@ -79,7 +79,7 @@ class ZookeeperNonBrokerManager:
             self.zk.close()
 
 
-    def subscriber_connect(self, role):
+    def subscriber_connect(self, role, socks_connect, socks_disconnect):
         # Call prevention
         if role != "subscriber":
             sys.exit("[ERR] This method can only be called by subscriber")
@@ -92,7 +92,8 @@ class ZookeeperNonBrokerManager:
             # Ensure a path, create if necessary
             self.zk.ensure_path(self.default_node_path)
 
-            self.watch()
+            # Watch on children
+            self.watch(socks_connect, socks_disconnect)
         
         # Exit
         except KeyboardInterrupt:
@@ -105,7 +106,7 @@ class ZookeeperNonBrokerManager:
 
 
     # Watch on the leader node, find new leader if the current leader suicides
-    def watch(self):
+    def watch(self, socks_connect, socks_disconnect):
         @self.zk.ChildrenWatch(self.default_node_path)
         def my_func(updated_publisher_server_url_lst):
             if sorted(updated_publisher_server_url_lst) != sorted(self.publisher_server_url_lst):                
@@ -118,10 +119,19 @@ class ZookeeperNonBrokerManager:
                 # Update local publisher_server_url_lst
                 self.publisher_server_url_lst = updated_publisher_server_url_lst
 
-                print(deleted_publisher_servers)
-                print(new_publisher_servers)
+                for node in deleted_publisher_servers:
+                    node_path = self.default_node_path + '/' + node
+                    host_ip = "tcp://" + self.zk.get(node_path) + ":" + self.publisher_server_default_port
+                    print("disconnect from: " + host_ip)
+                    socks_disconnect(host_ip)
+                
+                for node in new_publisher_servers:
+                    node_path = self.default_node_path + '/' + node
+                    host_ip = "tcp://" + self.zk.get(node_path) + ":" + self.publisher_server_default_port
+                    print("connect to: " + host_ip)
+                    socks_connect(host_ip)
 
-                self.watch()
+                self.watch(socks_connect, socks_disconnect)
             else:
                 print("[SETUP/ZK] Start watching on leader node")
 

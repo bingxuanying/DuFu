@@ -18,6 +18,9 @@ class Publisher:
 
         # Check if show message when tranfer
         self.show_data = show_data
+
+        # Init broker mode
+        self.broker_mode = broker_mode
         
         # Init publisher configuration
         self.node = Node("publisher")
@@ -26,7 +29,8 @@ class Publisher:
         self.socks = PublisherSockets()
 
         # Init publisher configuration
-        self.zk_client = ZookeeperBrokerManager(self.node.role)
+        self.zk_client = ZookeeperBrokerManager(self.node.role) if self.broker_mode \
+            else ZookeeperNonBrokerManager(self.node.role)
 
         # Init serializer
         self.serializer = Serializer()
@@ -47,7 +51,11 @@ class Publisher:
 
     # Connect to service discovery server (ZooKeeper)
     def connect(self):
-        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
+        if self.broker_mode:
+            self.zk_client.startup(self.socks.connect, self.socks.disconnect)
+        else:
+            self.socks.bind()
+            self.zk_client.publisher_connect(self.node.role, self.node.id, self.node.host)
 
 
     # Run publisher instance to produce data

@@ -25,6 +25,9 @@ class Subscriber:
         # Check if show message when tranfer
         self.show_data = show_data
 
+        # Init broker mode
+        self.broker_mode = broker_mode
+
         print("[SETUP/SUB] Initialize the subscriber ...")
 
         # Init subscriber configuration
@@ -34,7 +37,8 @@ class Subscriber:
         self.socks = SubscriberSockets()
 
         # Init subscriber configuration
-        self.zk_client = ZookeeperBrokerManager(self.node.role)
+        self.zk_client = ZookeeperBrokerManager(self.node.role) if self.broker_mode \
+            else ZookeeperNonBrokerManager(self.node.role)
 
         # Init serializer
         self.serializer = Serializer()
@@ -58,7 +62,10 @@ class Subscriber:
 
     # Connect to service discovery server (ZooKeeper)
     def connect(self):
-        self.zk_client.startup(self.socks.connect, self.socks.disconnect)
+        if self.broker_mode:
+            self.zk_client.startup(self.socks.connect, self.socks.disconnect)
+        else:
+            self.zk_client.subscriber_connect(self.node.role, self.socks.connect, self.socks.disconnect)
 
 
     # Run subscrber instance to receive data
