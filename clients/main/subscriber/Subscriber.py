@@ -14,13 +14,19 @@ class Subscriber:
     serializer = None
     records = None
     subscription = None
+    show_data = None
 
-    def __init__(self, isDebug):
+    def __init__(self, show_data:bool=False):
         print("[PRE] Subscribe to topics ...")
+
         # Let user type zipcodes they want to subscribe
         self.subscription = Subscription()
 
+        # Check if show message when tranfer
+        self.show_data = show_data
+
         print("[SETUP/SUB] Initialize the subscriber ...")
+
         # Init publisher configuration
         self.node = Node("subscriber")
         
@@ -101,16 +107,18 @@ class Subscriber:
     def notify(self, message):
         # Deserialize messages
         topic, body = self.serializer.json_demogrify(message)
-        print("topic: " + topic)
-        for k in body:
-            print(str(k) + ": " + str(body[k]))
 
         # Calculate transmission time
         start_time = datetime.strptime(body["timestamp"], self.node.time_format)
         end_time = datetime.now()
         time_diff = (end_time - start_time)
         transmission_time = time_diff.total_seconds()
-        print("Transmission time = ", transmission_time)
-        print("")
+
+        if self.show_data:
+            print("topic: " + topic)
+            for k in body:
+                print(str(k) + ": " + str(body[k]))
+            print("Transmission time = ", transmission_time)
+            print("")
         
         return transmission_time

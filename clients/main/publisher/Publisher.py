@@ -10,9 +10,13 @@ class Publisher:
     node = None
     zk_client = None
     serializer = None
+    show_data = None
 
-    def __init__(self, debug_mode):
+    def __init__(self, show_data:bool=False):
         print("[SETUP/PUB] Initialize the publisher ...")
+
+        # Check if show message when tranfer
+        self.show_data = show_data
         
         # Init publisher configuration
         self.node = Node("publisher")
@@ -69,7 +73,7 @@ class Publisher:
 
         # Disconnect from service discovery server (ZooKeeper)
         self.zk_client.exit()
-        
+
         print("[EXIT] Closed")
 
 
@@ -84,4 +88,6 @@ class Publisher:
         pub_sock = self.socks.get_pub()
         msg = self.serializer.json_mogrify(topic, body)
         pub_sock.send_string(msg)
-        print(msg)
+
+        if self.show_data:
+            print(msg)

@@ -1,11 +1,12 @@
-import os
+from os import path
 import sys
-currentdir = os.path.dirname(os.path.realpath(__file__))
-parentdir = os.path.dirname(currentdir)
-sys.path.append(parentdir)
+currentdir = path.dirname(path.realpath(__file__))
+parentdir = path.dirname(currentdir)
+sys.path.append(path.join(parentdir, "main"))
 
-from main.BrokerServer import BrokerServer
+from BrokerServer import BrokerServer
+
 
 if __name__ == "__main__":
-    broker_server = BrokerServer(False)
+    broker_server = BrokerServer(True)
     broker_server.startable()

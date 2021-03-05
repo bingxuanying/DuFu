@@ -8,6 +8,5 @@ from publisher.Publisher import Publisher
 
 
 if __name__ == "__main__":
-    pub = Publisher(False)
-
+    pub = Publisher(True)
     pub.startable()
