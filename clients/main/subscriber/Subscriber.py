@@ -65,7 +65,11 @@ class Subscriber:
         if self.broker_mode:
             self.zk_client.startup(self.socks.connect, self.socks.disconnect)
         else:
-            self.zk_client.subscriber_connect(self.node.role, self.socks.connect, self.socks.disconnect)
+            self.zk_client.subscriber_connect(
+                self.node.role, 
+                self.socks.connect, 
+                self.socks.disconnect
+            )
 
 
     # Run subscrber instance to receive data

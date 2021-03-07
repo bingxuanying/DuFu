@@ -48,8 +48,8 @@ class ZookeeperLeaderElector:
 
             # Create a node with data
             node = "node" + server_id
-            path = self.default_node_path + '/' + node
-            self.zk.create_async(path, bytes(host_ip, 'utf-8'), ephemeral=True)
+            node_path = self.default_node_path + '/' + node
+            self.zk.create_async(node_path, bytes(host_ip, 'utf-8'), ephemeral=True)
 
             # Elect for leadership
             print("[SETUP/ZK] Elect for leadership ...")

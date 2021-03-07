@@ -50,7 +50,7 @@ def main():
 
     # On exit
     except KeyboardInterrupt:
-        print("Stop creating")
+        print("[EXIT] Exit success")
         
 
 if __name__ == "__main__":

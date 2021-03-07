@@ -15,6 +15,8 @@ class ZookeeperNonBrokerManager:
 
 
     def __init__(self, role):
+        print("[SETUP/ZK] Communicate NOT through broker")
+
         # Default zookeeper node path to CRUD
         self.default_node_path = "/publishers"
 
@@ -72,9 +74,7 @@ class ZookeeperNonBrokerManager:
         # Exit
         except KeyboardInterrupt:
             self.exit()
-
-        # Alwasys stop the zk instance and disconnect
-        finally:
+            # Alwasys stop the zk instance and disconnect
             self.zk.stop()
             self.zk.close()
 
@@ -98,9 +98,7 @@ class ZookeeperNonBrokerManager:
         # Exit
         except KeyboardInterrupt:
             self.exit()
-
-        # Alwasys stop the zk instance and disconnect
-        finally:
+            # Alwasys stop the zk instance and disconnect
             self.zk.stop()
             self.zk.close()
 
@@ -119,17 +117,23 @@ class ZookeeperNonBrokerManager:
                 # Update local publisher_server_url_lst
                 self.publisher_server_url_lst = updated_publisher_server_url_lst
 
-                for node in deleted_publisher_servers:
-                    node_path = self.default_node_path + '/' + node
-                    host_ip = "tcp://" + self.zk.get(node_path) + ":" + self.publisher_server_default_port
-                    print("disconnect from: " + host_ip)
-                    socks_disconnect(host_ip)
+                if deleted_publisher_servers:
+                    print("[SETUP/ZK] Disconnected from " + str(deleted_publisher_servers))
+                    for node in deleted_publisher_servers:
+                        node_path = self.default_node_path + '/' + node
+                        data, _ = self.zk.get(node_path)
+                        host_ip = "tcp://{0}:{1}".format(data.decode("utf-8"), self.publisher_server_default_port)
+                        print("disconnect from: " + host_ip)
+                        socks_disconnect(host_ip)
                 
-                for node in new_publisher_servers:
-                    node_path = self.default_node_path + '/' + node
-                    host_ip = "tcp://" + self.zk.get(node_path) + ":" + self.publisher_server_default_port
-                    print("connect to: " + host_ip)
-                    socks_connect(host_ip)
+                if new_publisher_servers:
+                    print("[SETUP/ZK] Connected to " + str(new_publisher_servers))
+                    for node in new_publisher_servers:
+                        node_path = self.default_node_path + '/' + node
+                        data, _ = self.zk.get(node_path)
+                        host_ip = "tcp://{0}:{1}".format(data.decode("utf-8"), self.publisher_server_default_port)
+                        print("connect to: " + host_ip)
+                        socks_connect(host_ip)
 
                 self.watch(socks_connect, socks_disconnect)
             else:

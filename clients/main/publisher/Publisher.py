@@ -29,6 +29,7 @@ class Publisher:
         self.socks = PublisherSockets()
 
         # Init publisher configuration
+        
         self.zk_client = ZookeeperBrokerManager(self.node.role) if self.broker_mode \
             else ZookeeperNonBrokerManager(self.node.role)
 
@@ -67,6 +68,7 @@ class Publisher:
             try:
                 # Randomly produce zipcode and data
                 zipcode = randrange(10000, 100000)
+                # zipcode = 22200
                 body = {
                     "temperature": randrange(-80, 135),
                     "relhumidity": randrange(10, 60),

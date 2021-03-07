@@ -14,6 +14,8 @@ class ZookeeperBrokerManager:
     leader_broker_url = None
 
     def __init__(self, role):
+        print("[SETUP/ZK] Communicate through broker")
+
         # Default zookeeper node path to CRUD
         self.default_node_path = "/cluster"
 
@@ -73,7 +75,7 @@ class ZookeeperBrokerManager:
         # Read the leader broker connection url
         data, _ = self.zk.get(self.leader_broker_node_path)
         leader_host = data.decode("utf-8")
-        self.leader_broker_url = "tcp://" + leader_host + ":" + self.broker_server_default_port
+        self.leader_broker_url = "tcp://{0}:{1}".format(leader_host, self.broker_server_default_port)
 
         # Connect to leader broker
         socks_connect(self.leader_broker_url)
