@@ -74,9 +74,6 @@ class ZookeeperNonBrokerManager:
         # Exit
         except KeyboardInterrupt:
             self.exit()
-            # Alwasys stop the zk instance and disconnect
-            self.zk.stop()
-            self.zk.close()
 
 
     def subscriber_connect(self, role, socks_connect, socks_disconnect):
@@ -98,9 +95,6 @@ class ZookeeperNonBrokerManager:
         # Exit
         except KeyboardInterrupt:
             self.exit()
-            # Alwasys stop the zk instance and disconnect
-            self.zk.stop()
-            self.zk.close()
 
 
     # Watch on the leader node, find new leader if the current leader suicides
@@ -153,4 +147,7 @@ class ZookeeperNonBrokerManager:
 
     def exit(self):
         print("[EXIT] Disconnect from zookeeper server.")
+        # Alwasys stop the zk instance and disconnect
+        self.zk.stop()
+        self.zk.close()
         raise KeyboardInterrupt
