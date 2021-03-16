@@ -1,75 +1,64 @@
 # DuFu
 
-## Important:
+## Introduction:
 
-- The script can only run on Linux System with Python3 and Mininet installed
+Assignment for CS6381
+Vanderbilt University
+Instructor: Aniruddha Gokhale
 
-# Demo
+This is a pub/sub system ran with Zookeeper in two modes:
 
-Demo Video URL: https://youtu.be/iZ8yKDVKD3U
+1. Subscriber(s) establishes connection with publisher directly.
+2. Subscrbier(s) and Publisher(s) communicate via active Broker(s).
 
-- 00:00​ - 00:37 Brief Introduction
+## Prerequisites:
 
-- 00:37​ - 07:28 Present Approach #1 (with broker)
+- Ubuntu Linux 20.04
+- Mininet - Recommend installing from source
+- Apache ZooKeeper 3.6.2 - Download and run `$ZOOKEEPER/bin/zkServer.sh start`
+- Python 3 `sudo apt install python3`
+- XTerm `sudo apt-get install xterm`
+- Install packages by `sudo -H python3 -m pip install --upgrade pyzmq netifaces matplotlib`
 
-- 07:28​ - end Present Approach #2 (non broker mode)
+## Demo
 
-For both approaches,
+Demo Video URL: https://youtu.be/gyl4japzaV0
 
-- I have first presented that **one** subscriber can successfuly receive messages of the topic it subscribed from publisher.
+- 00:00​ - 01:10 Setup environment
+- 01:10​ - 06:30 Direct communication between pub(s) and sub(s)
+- 06:30​ - (end) Communicate via active broker(s)
 
-- Then **one** subscriber can successfully received from **two** publishers.
+## How to execute code:
 
-- Finaly, I presented that **two** subscribers can receive identical messages of the same topics they subscribed from publishers, and messages under different topics can only received by those who subscribed the topics.
+### Start Instances (Broker, Publisher, Subscriber)
 
-## Instructions:
+- **Broker**: ./bin/dufu-server-start.sh
+- **Publisher**: ./bin/dufu-publisher-run.sh [broker]
+- **Subscriber**: ./bin/dufu-subscriber-run.sh [broker]
+  note: If the argument "broker" is given, the client instance will always look for the leader broker to connect.
 
-1. run "sudo -H python3 -m pip install --upgrade pyzmq netifaces matplotlib"
+### Importance:
 
-2. run "sudo mn -x --topo=tree,fanout=3,depth=2"
+1. Make sure Mininet is setup.
+2. Make sure start zookeeper server on h1 node. Otherwise, modify the default address of zookeeper server on each config files under config folder
+3. Make sure brokers, publishers, and subscribers are ran on hx node (e.g. h1, h2, h3, ... etc).
 
-3. On each xTerms Window, run "python3 ./run_test.py" under folder "PubSub-ZMQ" **on host (h1, h2, etc.) but NOT no switch (s1, s2, etc.)**
+## View Performance
 
-4. Follow instructions on command line to configure the system and create instance
+The code will record the tramission time of each piece of the data received from publisher(s). Once the subscriber instance is terminated, the latency data plot will be shown and save at **"./assests** folder.
 
-   - Broker:
+## Note on Approaches
 
-     - "y" => will create a broker and enter broker mode
-     - "n" => will enter non-broker mode
+### Flooding Strategy
 
-   - Debug:
+Publisher(s) connects to the Zookeeper and registers its ip address with it so that Subscribers can discover them. Publisher(s) binds on all possible ip addressesand sends the multicast message.
 
-     - "y" => will print out the data being sent or received
-     - "n" => will not print anything
+Subscriber(s) first connects to Zookeeper server and find all the active Publishers to estabilish TCP connections and receive the multicast message with the topic it subscribed. Subscriber(s) watches on the corresponding node on Zookeeper server for the Publisher(s) status updates.
 
-   - Pub/Sub:\
+### Broker Strategy
 
-     - "pub" => create a publisher
-     - "sub" => create a subscriber
+Broker(s) registers its ip address with Zookeeper server and elect for leadership. Once it's elected as leader, it then start serving for establishing communication between numbers of Publishers and Subscribers.
 
-   - (Only in Sub):
+Publisher(s) read the ip address of the leader broker from Zookeeper server and establish TCP connections. Publisher(s) keeps watching on the corresponding node on Zookeeper server for the leader status updates. If new leader is elected, Publishers(s) will disconnect from the old one and attempt to establish TCP connection with the new leader broker. The multicast messages from the Publisher(s) are sent to the leader broker and then being pulled by Subscriber(s) on their demands.
 
-     - enter the zipcode you want to subscribe.
-     - enter "done" to indicate finish entering
-
-   - Exit: Prese "Ctrl + C" to exit and terminate the program
-
-## Explaination on Each Part
-
-### Broker
-
-- The frist time the user start the script, the user will be asked if he/she wants to build a broker. If "yes", the code will automatically create a broker for user on current host.
-
-- After entering either "Broker Mode" or "Non-Broker Mode", the user cannot exit the mode unless program(s) are all turned off on each host.
-
-- The broker cannot be turned off or stopped by "ctrl + c" if there are publisher(s) or subscriber(s) actively running on other hosts.
-
-### Publisher
-
-- The publisher(s) will randomly produce 5-digits zipcode and publish to either broker or subscriber.
-
-### Subscriber
-
-- The subscriber(s) has to scriber to a **5-digits** zipcode. Otherwise, the program will not take the zipcode, and warn the user.
-
-- When exit, the program will automatically create plot that records the time it taks for the user to receive each pieces of data. There are some plot images on the root folder. Feel free to check it out.
+Subscriber(s) read the ip address of the leader broker from Zookeeper server and establish TCP connections. Subscriber(s) keeps watching on the corresponding node on Zookeeper server for the leader status updates. If new leader is elected, Subscriber(s) will disconnect from the old one and attempt to establish TCP connection with the new leader broker. Subscriber(s) receives multicast message with the topic it subscribes with from the leader broker.
