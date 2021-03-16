@@ -1,9 +1,16 @@
+from os import path
+import sys
+currentdir = path.dirname(path.realpath(__file__))
+parentdir = path.dirname(path.dirname(currentdir))
+sys.path.append(path.join(parentdir, "main"))
+
+from argparse import ArgumentParser
 from datetime import datetime
 import zmq
 
-from .SubscriberSockets import SubscriberSockets
-from .SubscriberRecords import SubscriberRecords
-from .Subscription import Subscription
+from SubscriberSockets import SubscriberSockets
+from SubscriberRecords import SubscriberRecords
+from Subscription import Subscription
 from common import *
 
 
@@ -133,3 +140,19 @@ class Subscriber:
             print("")
         
         return transmission_time
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+
+    parser.add_argument("-s", "--show", 
+                            help="console log data being received or sent", 
+                            dest="show", action="store_true", default=False)
+
+    parser.add_argument("-b", "--broker", 
+                            help="console log data being received or sent", 
+                            dest="broker", action="store_true", default=False)
+
+    args = parser.parse_args()
+
+    Subscriber(args.show, args.broker).startable()

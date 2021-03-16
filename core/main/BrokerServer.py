@@ -1,4 +1,6 @@
+from argparse import ArgumentParser
 from ZookeeperLeaderElector import ZookeeperLeaderElector
+
 from Broker import Broker
 
 
@@ -39,3 +41,15 @@ class BrokerServer:
     # Terminate broker server
     def exit(self):
         print("[EXIT] Shut down Broker server {}.".format(self.broker.id))
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+
+    parser.add_argument("-s", "--show", 
+                            help="console log data being received or sent", 
+                            dest="show", action="store_true", default=False)
+
+    args = parser.parse_args()
+
+    BrokerServer(args.show).startable()

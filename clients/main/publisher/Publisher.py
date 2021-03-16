@@ -1,7 +1,14 @@
+from os import path
+import sys
+currentdir = path.dirname(path.realpath(__file__))
+parentdir = path.dirname(path.dirname(currentdir))
+sys.path.append(path.join(parentdir, "main"))
+
+from argparse import ArgumentParser
 from random import randrange
 from datetime import datetime
 
-from .PublisherSockets import PublisherSockets
+from PublisherSockets import PublisherSockets
 from common import *
 
 
@@ -102,3 +109,19 @@ class Publisher:
 
         if self.show_data:
             print(msg)
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+
+    parser.add_argument("-s", "--show", 
+                            help="console log data being received or sent", 
+                            dest="show", action="store_true", default=False)
+
+    parser.add_argument("-b", "--broker", 
+                            help="console log data being received or sent", 
+                            dest="broker", action="store_true", default=False)
+
+    args = parser.parse_args()
+
+    Publisher(args.show, args.broker).startable()
