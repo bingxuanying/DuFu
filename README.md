@@ -3,7 +3,9 @@
 ## Introduction:
 
 Assignment for CS6381
+
 Vanderbilt University
+
 Instructor: Aniruddha Gokhale
 
 This is a pub/sub system ran with Zookeeper in two modes:
