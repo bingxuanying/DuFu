@@ -20,7 +20,7 @@ This is a pub/sub system ran with Zookeeper in two modes:
 - Apache ZooKeeper 3.6.2 - Download and run `$ZOOKEEPER/bin/zkServer.sh start`
 - Python 3 `sudo apt install python3`
 - XTerm `sudo apt-get install xterm`
-- Install packages by `sudo -H python3 -m pip install --upgrade pyzmq netifaces matplotlib`
+- Install packages by `sudo -H python3 -m pip install --upgrade pyzmq netifaces matplotlib kazoo`
 
 ## Demo
 
